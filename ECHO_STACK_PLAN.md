@@ -231,18 +231,18 @@ Echo Stack includes a production-ready Effect Logger service that balances aviat
 
 ### Logger Features
 
-**Operational Logging (Aviation-Themed):**
+**Standard Methods (Developer-Friendly):**
 
-- `takeoff` - Starting operations 🚀
-- `cruise` - Normal operations ✈️
-- `landing` - Completing operations 🛬
-- `clearskies` - All systems nominal 🌤️
+- `debug`, `info`, `warn`, `error`, `success` - Familiar method names
+- Traditional error/warning language that developers expect
+- Errors use standard ❌ terminology for clarity
 
-**Traditional Logging (Developer-Friendly):**
+**Aviation-Themed Messages (Fun Operations):**
 
-- `debug`, `info`, `warn`, `error`, `success` - Standard levels with familiar terminology
-- Errors use traditional language and ❌ emoji for clarity
-- Warnings use standard ⚠️ messaging
+- `aviationMessages.starting()` - 🚀 Taking off: operation
+- `aviationMessages.processing()` - ✈️ In flight: operation
+- `aviationMessages.completing()` - 🛬 Landing: operation completed
+- `aviationMessages.success()` - 🌤️ Clear skies: operation successful
 
 **Production Features:**
 
@@ -254,23 +254,23 @@ Echo Stack includes a production-ready Effect Logger service that balances aviat
 ### Usage Examples
 
 ```typescript
-// Aviation-themed for operations
+// Aviation-themed messages for operations
 yield *
-  logger.takeoff("Starting user authentication", {
+  logger.info(aviationMessages.starting("user authentication"), {
     service: "auth",
     operation: "login",
   })
 
-// Traditional for errors
+// Traditional for errors (no aviation theme)
 yield *
   logger.error("Authentication failed", {
     service: "auth",
     metadata: { reason: "invalid_credentials" },
   })
 
-// Structured success
+// Aviation-themed success messages
 yield *
-  logger.landing("Authentication completed", {
+  logger.success(aviationMessages.completing("authentication"), {
     service: "auth",
     metadata: { userId: "123", duration: "150ms" },
   })
