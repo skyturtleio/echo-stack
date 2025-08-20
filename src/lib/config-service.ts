@@ -43,10 +43,9 @@ export interface EmailConfig {
   readonly resend: ResendConfig
 }
 
-export interface TriliptConfig {
-  readonly jwtSecret: string
-  readonly databaseUrl: string
-  readonly corsOrigin: string
+export interface JWTConfig {
+  readonly secret: string
+  readonly issuer: string
 }
 
 export interface AppConfig {
@@ -55,7 +54,7 @@ export interface AppConfig {
   readonly database: DatabaseConfig
   readonly auth: AuthConfig
   readonly email: EmailConfig
-  readonly triplit: TriliptConfig
+  readonly jwt: JWTConfig
 }
 
 /**
@@ -73,10 +72,7 @@ export interface ConfigService {
     ServerConfig,
     ConfigurationError
   >
-  readonly getTriliptConfig: () => Effect.Effect<
-    TriliptConfig,
-    ConfigurationError
-  >
+  readonly getJWTConfig: () => Effect.Effect<JWTConfig, ConfigurationError>
   readonly isProduction: () => Effect.Effect<boolean, ConfigurationError>
   readonly isDevelopment: () => Effect.Effect<boolean, ConfigurationError>
 }
@@ -182,10 +178,9 @@ const ResendConfigSchema = Config.nested(
   "RESEND",
 )
 
-const TriliptConfigSchema = Config.all({
-  jwtSecret: Config.string("EXTERNAL_JWT_SECRET"),
-  databaseUrl: Config.string("LOCAL_DATABASE_URL"),
-  corsOrigin: Config.string("CORS_ORIGIN"),
+const JWTConfigSchema = Config.all({
+  secret: Config.string("JWT_SECRET"),
+  issuer: Config.string("JWT_ISSUER"),
 })
 
 const AppConfigSchema = Config.all({
@@ -195,7 +190,7 @@ const AppConfigSchema = Config.all({
   auth: AuthConfigSchema,
   smtp: SmtpConfigSchema,
   resend: ResendConfigSchema,
-  triplit: TriliptConfigSchema,
+  jwt: JWTConfigSchema,
 })
 
 /**
@@ -245,7 +240,7 @@ const loadConfiguration = Effect.gen(function* () {
       database: config.database,
       auth: config.auth,
       email: emailConfig,
-      triplit: config.triplit,
+      jwt: config.jwt,
     }
 
     return appConfig
@@ -280,7 +275,7 @@ const ConfigServiceLive = Effect.gen(function* () {
 
     getServerConfig: () => Effect.succeed(config.server),
 
-    getTriliptConfig: () => Effect.succeed(config.triplit),
+    getJWTConfig: () => Effect.succeed(config.jwt),
 
     isProduction: () => Effect.succeed(config.environment === "production"),
 
@@ -316,8 +311,8 @@ export const getServerConfig = ConfigService.pipe(
   Effect.andThen((_) => _.getServerConfig()),
 )
 
-export const getTriliptConfig = ConfigService.pipe(
-  Effect.andThen((_) => _.getTriliptConfig()),
+export const getJWTConfig = ConfigService.pipe(
+  Effect.andThen((_) => _.getJWTConfig()),
 )
 
 export const isProduction = ConfigService.pipe(

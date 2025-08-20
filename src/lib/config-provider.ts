@@ -34,9 +34,11 @@ export const developmentProvider = defaultProvider.pipe(
         ],
         ["BETTER_AUTH_SECRET", "development-secret-key-minimum-32-chars"],
         ["BETTER_AUTH_URL", "http://localhost:3000"],
-        ["EXTERNAL_JWT_SECRET", "development-jwt-secret-for-triplit"],
-        ["CORS_ORIGIN", "http://localhost:3000"],
-        ["LOCAL_DATABASE_URL", "./data/triplit-dev.db"],
+        [
+          "JWT_SECRET",
+          "development-jwt-secret-for-integrations-minimum-32-chars",
+        ],
+        ["JWT_ISSUER", "echo-stack-app"],
         // Nested SMTP configuration (SMTP.*)
         ["SMTP_HOST", "localhost"],
         ["SMTP_PORT", "1025"],
@@ -62,9 +64,8 @@ export const testProvider = ConfigProvider.fromMap(
     ["DATABASE_URL", "postgresql://user:password@localhost:5432/hey_babe_test"],
     ["BETTER_AUTH_SECRET", "test-secret-key-minimum-32-characters"],
     ["BETTER_AUTH_URL", "http://localhost:3001"],
-    ["EXTERNAL_JWT_SECRET", "test-jwt-secret"],
-    ["CORS_ORIGIN", "http://localhost:3001"],
-    ["LOCAL_DATABASE_URL", ":memory:"],
+    ["JWT_SECRET", "test-jwt-secret-minimum-32-characters-long"],
+    ["JWT_ISSUER", "echo-stack-test"],
     // Nested SMTP configuration
     ["SMTP.HOST", "localhost"],
     ["SMTP.PORT", "1025"],

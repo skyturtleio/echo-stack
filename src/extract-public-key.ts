@@ -35,10 +35,11 @@ const extractPublicKeyForTriplit = Effect.gen(function* () {
   console.log("   1. Start your application server")
   console.log("   2. Visit: http://localhost:3000/api/auth/jwks")
   console.log("   3. Copy the JSON response")
-  console.log("   4. Add to Triplit server .env as EXTERNAL_JWT_SECRET")
+  console.log("   4. Add to external services .env as needed")
 
   console.log("\n🔧 Environment Variable Setup:")
-  console.log("   EXTERNAL_JWT_SECRET='<paste JWKS JSON here>'")
+  console.log("   JWT_SECRET='<your-jwt-secret-here>'")
+  console.log("   JWT_ISSUER='echo-stack-app'")
 
   console.log("\n✨ Public Key Extraction Information Complete!")
   console.log("\n📝 Next Steps:")
