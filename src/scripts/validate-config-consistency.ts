@@ -9,10 +9,17 @@
 
 import { Effect, ConfigProvider } from "effect"
 import { ValidatedDatabaseConfig } from "../lib/config-validation"
+import { Logger, LoggerLayer } from "../lib/logger-service"
 
 const validateConfigConsistency = Effect.gen(function* () {
-  console.log(
-    "🔍 Testing config consistency between Effect Config and Drizzle...",
+  const logger = yield* Logger
+
+  yield* logger.takeoff(
+    "Testing config consistency between Effect Config and Drizzle",
+    {
+      service: "config-validation",
+      operation: "initialization",
+    },
   )
 
   // Test 1: Load config using the same method as Drizzle config
@@ -23,11 +30,23 @@ const validateConfigConsistency = Effect.gen(function* () {
 
   const databaseUrl = yield* drizzleConfigMethod
 
-  console.log("✅ Effect Config validation passed")
-  console.log(`📡 Database URL: ${databaseUrl.replace(/:[^:@]*@/, ":****@")}`)
+  yield* logger.success("Effect Config validation passed", {
+    service: "config-validation",
+    operation: "validation-test-1",
+  })
+  yield* logger.info(
+    `Database URL: ${databaseUrl.replace(/:[^:@]*@/, ":****@")}`,
+    {
+      service: "config-validation",
+      operation: "validation-test-1",
+    },
+  )
 
   // Test 2: Verify URL format validation works
-  console.log("\n🔍 Testing validation with invalid URL...")
+  yield* logger.info("Testing validation with invalid URL...", {
+    service: "config-validation",
+    operation: "validation-test-2",
+  })
 
   const testInvalidUrl = ValidatedDatabaseConfig.pipe(
     Effect.withConfigProvider(
@@ -39,14 +58,29 @@ const validateConfigConsistency = Effect.gen(function* () {
   const invalidResult = yield* testInvalidUrl
 
   if (invalidResult._tag === "Left") {
-    console.log("✅ Invalid URL correctly rejected by Effect Config validation")
-    console.log(`   Error: ${invalidResult.left}`)
+    yield* logger.success(
+      "Invalid URL correctly rejected by Effect Config validation",
+      {
+        service: "config-validation",
+        operation: "validation-test-2",
+        metadata: { error: String(invalidResult.left) },
+      },
+    )
   } else {
-    console.log("❌ Invalid URL was not rejected - validation may be broken")
+    yield* logger.error(
+      "Invalid URL was not rejected - validation may be broken",
+      {
+        service: "config-validation",
+        operation: "validation-test-2",
+      },
+    )
   }
 
   // Test 3: Verify postgresql:// prefix validation
-  console.log("\n🔍 Testing PostgreSQL prefix validation...")
+  yield* logger.info("Testing PostgreSQL prefix validation...", {
+    service: "config-validation",
+    operation: "validation-test-3",
+  })
 
   const testNonPostgresUrl = ValidatedDatabaseConfig.pipe(
     Effect.withConfigProvider(
@@ -60,11 +94,18 @@ const validateConfigConsistency = Effect.gen(function* () {
   const nonPostgresResult = yield* testNonPostgresUrl
 
   if (nonPostgresResult._tag === "Left") {
-    console.log("✅ Non-PostgreSQL URL correctly rejected")
-    console.log(`   Error: ${nonPostgresResult.left}`)
+    yield* logger.success("Non-PostgreSQL URL correctly rejected", {
+      service: "config-validation",
+      operation: "validation-test-3",
+      metadata: { error: String(nonPostgresResult.left) },
+    })
   } else {
-    console.log(
-      "❌ Non-PostgreSQL URL was not rejected - validation may be broken",
+    yield* logger.error(
+      "Non-PostgreSQL URL was not rejected - validation may be broken",
+      {
+        service: "config-validation",
+        operation: "validation-test-3",
+      },
     )
   }
 
@@ -77,24 +118,33 @@ const validateConfigConsistency = Effect.gen(function* () {
 
 // Run the consistency test
 const program = validateConfigConsistency.pipe(
+  Effect.provide(LoggerLayer),
   Effect.catchAll((error) =>
-    Effect.sync(() => {
-      console.error("❌ Config consistency test failed:")
-      console.error(`   ${error}`)
+    Effect.gen(function* () {
+      const logger = yield* Logger
+      yield* logger.error(`Config consistency test failed: ${error}`, {
+        service: "config-validation",
+        operation: "test-failure",
+        metadata: { error: String(error) },
+      })
       return { success: false, error }
-    }),
+    }).pipe(Effect.provide(LoggerLayer)),
   ),
 )
 
-Effect.runPromise(program).then((result) => {
-  if (result.success) {
-    console.log("\n🎉 Config consistency validated!")
-    console.log("   • Effect Config and Drizzle config use the same validation")
-    console.log("   • Database URL validation is working correctly")
-    console.log("   • Error handling and fallbacks are in place")
-    process.exit(0)
-  } else {
-    console.log("\n💥 Config consistency issues detected!")
-    process.exit(1)
-  }
-})
+Effect.runPromise(program).then(
+  (result: { success: boolean; error?: unknown }) => {
+    if (result.success) {
+      console.log("\n🎉 Config consistency validated!")
+      console.log(
+        "   • Effect Config and Drizzle config use the same validation",
+      )
+      console.log("   • Database URL validation is working correctly")
+      console.log("   • Error handling and fallbacks are in place")
+      process.exit(0)
+    } else {
+      console.log("\n💥 Config consistency issues detected!")
+      process.exit(1)
+    }
+  },
+)

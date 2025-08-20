@@ -9,6 +9,7 @@ import {
   isDevelopment,
   isProduction,
 } from "./effect-config"
+import { Logger, LoggerLayer } from "./logger-service"
 
 /**
  * Example Usage of Effect Config
@@ -20,14 +21,25 @@ import {
  * Basic configuration loading example
  */
 export const basicExample = Effect.gen(function* () {
-  console.log("🔧 Loading basic configuration...")
+  const logger = yield* Logger
+
+  yield* logger.takeoff("Loading basic configuration", {
+    service: "config-example",
+    operation: "basic-config",
+  })
 
   const config = yield* loadConfig
 
-  console.log(`Environment: ${config.environment}`)
-  console.log(`Server: ${config.server.host}:${config.server.port}`)
-  console.log(`Database: ${config.database.url}`)
-  console.log(`Auth URL: ${config.auth.url}`)
+  yield* logger.info("Configuration loaded", {
+    service: "config-example",
+    operation: "basic-config",
+    metadata: {
+      environment: config.environment,
+      server: `${config.server.host}:${config.server.port}`,
+      database: config.database.url,
+      authUrl: config.auth.url,
+    },
+  })
 
   return config
 })
@@ -36,11 +48,19 @@ export const basicExample = Effect.gen(function* () {
  * Validated configuration loading example
  */
 export const validatedExample = Effect.gen(function* () {
-  console.log("✅ Loading validated configuration...")
+  const logger = yield* Logger
+
+  yield* logger.takeoff("Loading validated configuration", {
+    service: "config-example",
+    operation: "validated-config",
+  })
 
   const config = yield* loadValidatedConfig
 
-  console.log("Configuration validation passed!")
+  yield* logger.success("Configuration validation passed!", {
+    service: "config-example",
+    operation: "validated-config",
+  })
   return config
 })
 
@@ -48,16 +68,28 @@ export const validatedExample = Effect.gen(function* () {
  * Environment-specific configuration example
  */
 export const environmentExample = Effect.gen(function* () {
-  console.log("🌍 Checking environment-specific configuration...")
+  const logger = yield* Logger
+
+  yield* logger.takeoff("Checking environment-specific configuration", {
+    service: "config-example",
+    operation: "environment-check",
+  })
 
   const isDev = yield* isDevelopment
   const isProd = yield* isProduction
 
-  console.log(`Development mode: ${isDev}`)
-  console.log(`Production mode: ${isProd}`)
+  yield* logger.info("Environment modes", {
+    service: "config-example",
+    operation: "environment-check",
+    metadata: { development: isDev, production: isProd },
+  })
 
   const emailConfig = yield* getEmailConfig
-  console.log(`Email provider: ${emailConfig.provider}`)
+  yield* logger.info(`Email provider: ${emailConfig.provider}`, {
+    service: "config-example",
+    operation: "environment-check",
+    metadata: { emailProvider: emailConfig.provider },
+  })
 
   return { isDev, isProd, emailConfig }
 })
@@ -66,13 +98,23 @@ export const environmentExample = Effect.gen(function* () {
  * Custom test provider example
  */
 export const testProviderExample = Effect.gen(function* () {
-  console.log("🧪 Using custom test provider...")
+  const logger = yield* Logger
+
+  yield* logger.takeoff("Using custom test provider", {
+    service: "config-example",
+    operation: "test-provider",
+  })
 
   const config = yield* loadConfig
 
-  console.log("Test configuration loaded:")
-  console.log(`Server: ${config.server.host}:${config.server.port}`)
-  console.log(`Database: ${config.database.url}`)
+  yield* logger.info("Test configuration loaded", {
+    service: "config-example",
+    operation: "test-provider",
+    metadata: {
+      server: `${config.server.host}:${config.server.port}`,
+      database: config.database.url,
+    },
+  })
 
   return config
 }).pipe(Effect.withConfigProvider(testProvider))
@@ -81,20 +123,38 @@ export const testProviderExample = Effect.gen(function* () {
  * Error handling example
  */
 export const errorHandlingExample = Effect.gen(function* () {
-  console.log("❌ Testing error handling...")
+  const logger = yield* Logger
+
+  yield* logger.takeoff("Testing error handling", {
+    service: "config-example",
+    operation: "error-handling",
+  })
 
   // This will fail validation if BETTER_AUTH_SECRET is too short
   const result = yield* loadValidatedConfig.pipe(
-    Effect.catchAll((error) => {
-      console.error("Configuration error:", error.message)
-      return Effect.succeed(null)
-    }),
+    Effect.catchAll((error) =>
+      Effect.gen(function* () {
+        const innerLogger = yield* Logger
+        yield* innerLogger.error(`Configuration error: ${error.message}`, {
+          service: "config-example",
+          operation: "error-handling",
+          metadata: { error: error.message },
+        })
+        return null
+      }),
+    ),
   )
 
   if (result) {
-    console.log("Configuration loaded successfully")
+    yield* logger.success("Configuration loaded successfully", {
+      service: "config-example",
+      operation: "error-handling",
+    })
   } else {
-    console.log("Configuration failed validation")
+    yield* logger.warn("Configuration failed validation", {
+      service: "config-example",
+      operation: "error-handling",
+    })
   }
 
   return result
@@ -104,13 +164,23 @@ export const errorHandlingExample = Effect.gen(function* () {
  * Production configuration check example
  */
 export const productionCheckExample = Effect.gen(function* () {
-  console.log("🏭 Checking production configuration...")
+  const logger = yield* Logger
+
+  yield* logger.takeoff("Checking production configuration", {
+    service: "config-example",
+    operation: "production-check",
+  })
 
   const config = yield* loadValidatedConfig
 
-  console.log("Production configuration valid:")
-  console.log(`Environment: ${config.environment}`)
-  console.log(`Server: ${config.server.host}:${config.server.port}`)
+  yield* logger.success("Production configuration valid", {
+    service: "config-example",
+    operation: "production-check",
+    metadata: {
+      environment: config.environment,
+      server: `${config.server.host}:${config.server.port}`,
+    },
+  })
 
   return config
 }).pipe(
@@ -139,36 +209,50 @@ export const productionCheckExample = Effect.gen(function* () {
  * Run all examples
  */
 export const runAllExamples = Effect.gen(function* () {
-  console.log("🚀 Running all configuration examples...\n")
+  const logger = yield* Logger
+
+  yield* logger.takeoff("Running all configuration examples", {
+    service: "config-example",
+    operation: "run-all-examples",
+  })
 
   // Run basic example with default provider (reads from .env)
-  yield* basicExample.pipe(Effect.withConfigProvider(defaultProvider))
-  console.log()
+  yield* basicExample.pipe(
+    Effect.withConfigProvider(defaultProvider),
+    Effect.provide(LoggerLayer),
+  )
 
   // Run validated example
-  yield* validatedExample.pipe(Effect.withConfigProvider(defaultProvider))
-  console.log()
+  yield* validatedExample.pipe(
+    Effect.withConfigProvider(defaultProvider),
+    Effect.provide(LoggerLayer),
+  )
 
   // Run environment example
-  yield* environmentExample.pipe(Effect.withConfigProvider(defaultProvider))
-  console.log()
+  yield* environmentExample.pipe(
+    Effect.withConfigProvider(defaultProvider),
+    Effect.provide(LoggerLayer),
+  )
 
   // Run test provider example
-  yield* testProviderExample
-  console.log()
+  yield* testProviderExample.pipe(Effect.provide(LoggerLayer))
 
   // Run error handling example
-  yield* errorHandlingExample.pipe(Effect.withConfigProvider(defaultProvider))
-  console.log()
+  yield* errorHandlingExample.pipe(
+    Effect.withConfigProvider(defaultProvider),
+    Effect.provide(LoggerLayer),
+  )
 
   // Run production check example
-  yield* productionCheckExample
-  console.log()
+  yield* productionCheckExample.pipe(Effect.provide(LoggerLayer))
 
-  console.log("✅ All examples completed!")
+  yield* logger.landing("All examples completed!", {
+    service: "config-example",
+    operation: "run-all-examples",
+  })
 })
 
 // Export a simple function to run the examples
 export const runExamples = () => {
-  return Effect.runPromise(runAllExamples)
+  return Effect.runPromise(runAllExamples.pipe(Effect.provide(LoggerLayer)))
 }

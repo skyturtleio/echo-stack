@@ -11,6 +11,7 @@
 
 import { Effect, ConfigProvider, Config } from "effect"
 import { AutoDatabaseConfig } from "~/lib/database-naming"
+import { Logger, LoggerLayer } from "~/lib/logger-service"
 
 // Phoenix-style database config with auto-naming
 const loadDatabaseConfig = Effect.gen(function* () {
@@ -30,82 +31,139 @@ const loadDatabaseConfig = Effect.gen(function* () {
 })
 
 const seedDatabase = Effect.gen(function* () {
-  console.log("🌱 Seeding database with development data...")
+  const logger = yield* Logger
+
+  yield* logger.takeoff("Seeding database with development data", {
+    service: "database-seed",
+    operation: "initialization",
+  })
 
   // Load configuration
   const config = yield* loadDatabaseConfig
-  console.log(`   Environment: ${config.server.host}:${config.server.port}`)
+  yield* logger.info(
+    `Environment: ${config.server.host}:${config.server.port}`,
+    {
+      service: "database-seed",
+      metadata: { environment: config.environment },
+    },
+  )
 
   try {
-    console.log("   Creating development users...")
+    yield* logger.info("Creating development users...", {
+      service: "database-seed",
+      operation: "create-users",
+    })
     yield* createDevelopmentUsers()
 
-    console.log("   Setting up demo couples...")
+    yield* logger.info("Setting up demo couples...", {
+      service: "database-seed",
+      operation: "create-couples",
+    })
     yield* createDemoCouples()
 
-    console.log("   Adding sample todos...")
+    yield* logger.info("Adding sample todos...", {
+      service: "database-seed",
+      operation: "create-todos",
+    })
     yield* createSampleTodos()
 
-    console.log("   Ensuring BetterAuth keys exist...")
-    console.log(
+    yield* logger.info("Ensuring BetterAuth keys exist...", {
+      service: "database-seed",
+      operation: "ensure-auth-keys",
+    })
+    yield* logger.info(
       "     ⚠️  JWT key check skipped (BetterAuth keys generated on first use)",
     )
 
-    console.log("   ✅ Database seeded successfully")
+    yield* logger.landing("Database seeded successfully", {
+      service: "database-seed",
+      operation: "completion",
+    })
 
-    console.log("\n📊 Development Data Summary:")
-    console.log("   • Users: Demo users for testing")
-    console.log("   • Couples: Linked demo accounts")
-    console.log("   • Todos: Sample tasks across timeline views")
-    console.log("   • Auth: JWT keys for development")
+    yield* logger.info("Development Data Summary:", {
+      service: "database-seed",
+      metadata: {
+        users: "Demo users for testing",
+        couples: "Linked demo accounts",
+        todos: "Sample tasks across timeline views",
+        auth: "JWT keys for development",
+      },
+    })
 
-    console.log("\n🎯 Test Accounts:")
-    console.log("   • alice@example.com / password123")
-    console.log("   • bob@example.com / password123")
-    console.log("   • charlie@example.com / password123")
+    yield* logger.info("Test Accounts:", {
+      service: "database-seed",
+      metadata: {
+        accounts: [
+          "alice@example.com / password123",
+          "bob@example.com / password123",
+          "charlie@example.com / password123",
+        ],
+      },
+    })
   } catch (error) {
     yield* Effect.fail(error)
   }
 })
 
 const createDevelopmentUsers = () =>
-  Effect.succeed(
-    (() => {
-      const users = [
-        "alice@example.com",
-        "bob@example.com",
-        "charlie@example.com",
-      ]
+  Effect.gen(function* () {
+    const logger = yield* Logger
+    const users = [
+      "alice@example.com",
+      "bob@example.com",
+      "charlie@example.com",
+    ]
 
-      console.log("     Development users for testing:")
-      for (const email of users) {
-        console.log(`     • ${email} (password: password123)`)
-      }
+    yield* logger.info("Development users for testing:", {
+      service: "database-seed",
+      operation: "create-users",
+      metadata: {
+        users: users.map((email) => `${email} (password: password123)`),
+        signupUrl: "/sign-up",
+      },
+    })
 
-      console.log(
-        "     Users can be created through the signup form at /sign-up",
-      )
-      console.log("     Or use existing test users if already created")
-    })(),
-  )
+    yield* logger.info(
+      "Users can be created through the signup form at /sign-up",
+      {
+        service: "database-seed",
+        operation: "create-users",
+      },
+    )
+    yield* logger.info("Or use existing test users if already created", {
+      service: "database-seed",
+      operation: "create-users",
+    })
+  })
 
 const createDemoCouples = () =>
-  Effect.succeed(
-    (() => {
-      console.log("     Couples creation will be implemented with Phase 6")
-      console.log("     For now, users can test individual todo management")
-    })(),
-  )
+  Effect.gen(function* () {
+    const logger = yield* Logger
+    yield* logger.info("Couples creation will be implemented with Phase 6", {
+      service: "database-seed",
+      operation: "create-couples",
+    })
+    yield* logger.info("For now, users can test individual todo management", {
+      service: "database-seed",
+      operation: "create-couples",
+    })
+  })
 
 const createSampleTodos = () =>
-  Effect.succeed(
-    (() => {
-      console.log(
-        "     Todo creation will be implemented with Triplit in Phase 4",
-      )
-      console.log("     For now, focus on authentication flows")
-    })(),
-  )
+  Effect.gen(function* () {
+    const logger = yield* Logger
+    yield* logger.info(
+      "Todo creation will be implemented with Triplit in Phase 4",
+      {
+        service: "database-seed",
+        operation: "create-todos",
+      },
+    )
+    yield* logger.info("For now, focus on authentication flows", {
+      service: "database-seed",
+      operation: "create-todos",
+    })
+  })
 
 // Commented out ensureBetterAuthKeys to prevent hanging
 // This function was causing the script to hang due to BetterAuth connection not closing
@@ -131,17 +189,29 @@ const createSampleTodos = () =>
 
 // Main execution
 const program = seedDatabase.pipe(
+  Effect.provide(LoggerLayer),
   Effect.withConfigProvider(ConfigProvider.fromEnv()),
   Effect.catchAll((error) =>
     Effect.gen(function* () {
-      console.error(`\n❌ Seeding failed: ${error}`)
-      console.error("\n🔧 Troubleshooting:")
-      console.error("   • Ensure database is running and migrated")
-      console.error("   • Check DATABASE_URL in .env file")
-      console.error("   • Try: bun run db:test")
-      console.error("   • Run: bun run db:setup (includes migration)")
+      const logger = yield* Logger
+      yield* logger.error(`Seeding failed: ${error}`, {
+        service: "database-seed",
+        operation: "failure",
+        metadata: { error: String(error) },
+      })
+      yield* logger.error("Troubleshooting:", {
+        service: "database-seed",
+        metadata: {
+          steps: [
+            "Ensure database is running and migrated",
+            "Check DATABASE_URL in .env file",
+            "Try: bun run db:test",
+            "Run: bun run db:setup (includes migration)",
+          ],
+        },
+      })
       yield* Effect.fail(new Error("Database seeding failed"))
-    }),
+    }).pipe(Effect.provide(LoggerLayer)),
   ),
 )
 
