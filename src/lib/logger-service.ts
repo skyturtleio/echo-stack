@@ -33,43 +33,13 @@ export interface LoggerConfig {
   enableTimestamp: boolean
 }
 
-// Logger service interface
+// Logger service interface - standard methods only
 export interface Logger {
-  // Standard logging methods (primary interface)
   debug: (message: string, context?: LogContext) => Effect.Effect<void>
   info: (message: string, context?: LogContext) => Effect.Effect<void>
   warn: (message: string, context?: LogContext) => Effect.Effect<void>
   error: (message: string, context?: LogContext) => Effect.Effect<void>
   success: (message: string, context?: LogContext) => Effect.Effect<void>
-
-  // Aviation-themed aliases for operational messages (optional, fun development experience)
-  takeoff: (message: string, context?: LogContext) => Effect.Effect<void> // Starting operations (info level)
-  cruise: (message: string, context?: LogContext) => Effect.Effect<void> // Normal operations (debug level)
-  landing: (message: string, context?: LogContext) => Effect.Effect<void> // Completing operations (success level)
-  clearskies: (message: string, context?: LogContext) => Effect.Effect<void> // All good status (success level)
-}
-
-export interface LoggerConfig {
-  level: LogLevel
-  format: "console" | "json"
-  enableColors: boolean
-  enableTimestamp: boolean
-}
-
-// Logger service interface
-export interface Logger {
-  // Standard logging methods
-  debug: (message: string, context?: LogContext) => Effect.Effect<void>
-  info: (message: string, context?: LogContext) => Effect.Effect<void>
-  warn: (message: string, context?: LogContext) => Effect.Effect<void>
-  error: (message: string, context?: LogContext) => Effect.Effect<void>
-  success: (message: string, context?: LogContext) => Effect.Effect<void>
-
-  // Aviation-themed aliases for fun development experience
-  takeoff: (message: string, context?: LogContext) => Effect.Effect<void> // Starting operations (info level)
-  cruise: (message: string, context?: LogContext) => Effect.Effect<void> // Normal operations (debug level)
-  landing: (message: string, context?: LogContext) => Effect.Effect<void> // Completing operations (success level)
-  clearskies: (message: string, context?: LogContext) => Effect.Effect<void> // All good status (success level)
 }
 
 // Logger context tag for dependency injection
@@ -89,17 +59,13 @@ const colors = {
   white: "\x1b[37m",
 }
 
-// Emoji mappings for different log levels
+// Emoji mappings for standard log levels
 const emojis = {
   debug: "🔍",
   info: "📡",
   warn: "⚠️",
   error: "❌",
   success: "✅",
-  takeoff: "🚀",
-  cruise: "✈️",
-  landing: "🛬",
-  clearskies: "🌤️",
 }
 
 // Configuration loader with defaults
@@ -155,10 +121,6 @@ const LoggerLive = Layer.effect(
           warn: colors.yellow,
           error: colors.red,
           success: colors.green,
-          takeoff: colors.cyan,
-          cruise: colors.blue,
-          landing: colors.green,
-          clearskies: colors.green,
         }
 
         const color =
@@ -213,16 +175,6 @@ const LoggerLive = Layer.effect(
         log("error", message, context),
       success: (message: string, context?: LogContext) =>
         log("success", message, context),
-
-      // Aviation-themed aliases for operational messages (optional)
-      takeoff: (message: string, context?: LogContext) =>
-        log("takeoff", message, context),
-      cruise: (message: string, context?: LogContext) =>
-        log("cruise", message, context),
-      landing: (message: string, context?: LogContext) =>
-        log("landing", message, context),
-      clearskies: (message: string, context?: LogContext) =>
-        log("clearskies", message, context),
     })
   }),
 )
@@ -237,11 +189,26 @@ export const useLogger = Effect.gen(function* () {
   return yield* Logger
 })
 
+// Aviation-themed message helpers for operational logging
+export const aviationMessages = {
+  starting: (operation: string) => `🚀 Taking off: ${operation}`,
+  processing: (operation: string) => `✈️ In flight: ${operation}`,
+  completing: (operation: string) => `🛬 Landing: ${operation} completed`,
+  success: (operation: string) => `🌤️ Clear skies: ${operation} successful`,
+  monitoring: (system: string) => `📡 Monitoring ${system} systems`,
+}
+
 // Quick logging functions for backward compatibility with console.*
 export const log = (message: string, context?: LogContext) =>
   Effect.gen(function* () {
     const logger = yield* Logger
     yield* logger.info(message, context)
+  })
+
+export const logError = (message: string, context?: LogContext) =>
+  Effect.gen(function* () {
+    const logger = yield* Logger
+    yield* logger.error(message, context)
   })
 
 export const logWarn = (message: string, context?: LogContext) =>
@@ -254,24 +221,4 @@ export const logSuccess = (message: string, context?: LogContext) =>
   Effect.gen(function* () {
     const logger = yield* Logger
     yield* logger.success(message, context)
-  })
-
-// Aviation-themed convenience functions for operational messages
-export const takeoff = (message: string, context?: LogContext) =>
-  Effect.gen(function* () {
-    const logger = yield* Logger
-    yield* logger.takeoff(message, context)
-  })
-
-export const landing = (message: string, context?: LogContext) =>
-  Effect.gen(function* () {
-    const logger = yield* Logger
-    yield* logger.landing(message, context)
-  })
-
-// Traditional error convenience function
-export const logError = (message: string, context?: LogContext) =>
-  Effect.gen(function* () {
-    const logger = yield* Logger
-    yield* logger.error(message, context)
   })

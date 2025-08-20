@@ -9,7 +9,7 @@ import {
   isDevelopment,
   isProduction,
 } from "./effect-config"
-import { Logger, LoggerLayer } from "./logger-service"
+import { Logger, LoggerLayer, aviationMessages } from "./logger-service"
 
 /**
  * Example Usage of Effect Config

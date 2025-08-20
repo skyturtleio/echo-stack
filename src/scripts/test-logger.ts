@@ -3,22 +3,25 @@
 /**
  * Logger Test Script - Echo Stack
  *
- * Tests the Effect Logger service with different log levels and contexts
- * before replacing console.* statements across the codebase.
+ * Tests the Effect Logger service with standard methods and aviation-themed messages
+ * for operational logging while keeping traditional error/warning terminology.
  */
 
 import { Effect } from "effect"
-import { Logger, LoggerLayer, takeoff, landing } from "../lib/logger-service"
+import { Logger, LoggerLayer, aviationMessages } from "../lib/logger-service"
 
 const testLogger = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Testing Echo Stack Logger Service", {
-    service: "test-logger",
-    operation: "initialization",
-  })
+  yield* logger.info(
+    aviationMessages.starting("Echo Stack Logger Service testing"),
+    {
+      service: "test-logger",
+      operation: "initialization",
+    },
+  )
 
-  // Test all log levels
+  // Test all standard log levels
   yield* logger.debug("Debug information for development", {
     service: "test-logger",
     metadata: { debugLevel: "verbose" },
@@ -39,18 +42,18 @@ const testLogger = Effect.gen(function* () {
     operation: "success-test",
   })
 
-  // Test aviation-themed logging
-  yield* logger.cruise("Normal operation in progress", {
+  // Test aviation-themed messages for operations
+  yield* logger.debug(aviationMessages.processing("user data validation"), {
     service: "aviation-test",
     operation: "cruise-control",
   })
 
-  yield* logger.clearskies("All systems nominal", {
+  yield* logger.success(aviationMessages.success("all systems"), {
     service: "aviation-test",
     metadata: { altitude: "30000ft", speed: "500kt" },
   })
 
-  // Test error logging
+  // Test error logging (traditional messaging)
   yield* logger.error("Standard error message", {
     service: "test-logger",
     operation: "error-test",
@@ -63,7 +66,7 @@ const testLogger = Effect.gen(function* () {
     metadata: { criticalError: true, requiresImmediate: true },
   })
 
-  yield* logger.landing("Logger testing completed successfully", {
+  yield* logger.success(aviationMessages.completing("Logger testing"), {
     service: "test-logger",
     operation: "finalization",
   })
@@ -73,12 +76,14 @@ const testLogger = Effect.gen(function* () {
 
 // Test convenience functions without context
 const testConvenienceFunctions = Effect.gen(function* () {
-  yield* takeoff("Testing convenience functions")
+  const logger = yield* Logger
+
+  yield* logger.info(aviationMessages.starting("convenience functions testing"))
 
   // These should work without explicit context
   yield* Effect.sleep("100 millis")
 
-  yield* landing("Convenience functions test complete")
+  yield* logger.success(aviationMessages.success("convenience functions test"))
 
   return { success: true }
 })

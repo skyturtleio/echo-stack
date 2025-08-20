@@ -11,7 +11,7 @@
 
 import { Effect, ConfigProvider, Config } from "effect"
 import { AutoDatabaseConfig } from "~/lib/database-naming"
-import { Logger, LoggerLayer } from "~/lib/logger-service"
+import { Logger, LoggerLayer, aviationMessages } from "~/lib/logger-service"
 
 // Phoenix-style database config with auto-naming
 const loadDatabaseConfig = Effect.gen(function* () {
@@ -33,10 +33,13 @@ const loadDatabaseConfig = Effect.gen(function* () {
 const seedDatabase = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Seeding database with development data", {
-    service: "database-seed",
-    operation: "initialization",
-  })
+  yield* logger.info(
+    aviationMessages.starting("database seeding with development data"),
+    {
+      service: "database-seed",
+      operation: "initialization",
+    },
+  )
 
   // Load configuration
   const config = yield* loadDatabaseConfig
@@ -75,7 +78,7 @@ const seedDatabase = Effect.gen(function* () {
       "     ⚠️  JWT key check skipped (BetterAuth keys generated on first use)",
     )
 
-    yield* logger.landing("Database seeded successfully", {
+    yield* logger.success(aviationMessages.completing("Database seeding"), {
       service: "database-seed",
       operation: "completion",
     })

@@ -9,13 +9,15 @@
 
 import { Effect, ConfigProvider } from "effect"
 import { ValidatedDatabaseConfig } from "../lib/config-validation"
-import { Logger, LoggerLayer } from "../lib/logger-service"
+import { Logger, LoggerLayer, aviationMessages } from "../lib/logger-service"
 
 const validateConfigConsistency = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff(
-    "Testing config consistency between Effect Config and Drizzle",
+  yield* logger.info(
+    aviationMessages.starting(
+      "config consistency testing between Effect Config and Drizzle",
+    ),
     {
       service: "config-validation",
       operation: "initialization",

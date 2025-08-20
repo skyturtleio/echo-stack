@@ -9,13 +9,13 @@
 
 import { Effect, ConfigProvider } from "effect"
 import { AutoDatabaseConfig } from "../../lib/database-naming"
-import { Logger, LoggerLayer } from "../../lib/logger-service"
+import { Logger, LoggerLayer, aviationMessages } from "../../lib/logger-service"
 import postgres from "postgres"
 
 const testDatabaseConnection = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Testing database connection", {
+  yield* logger.info(aviationMessages.starting("database connection testing"), {
     service: "database-test",
     operation: "connection-test",
   })
