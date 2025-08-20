@@ -14,18 +14,35 @@
  * Usage: bun run db:setup
  */
 
-import { ConfigProvider, Effect } from "effect"
-import { loadConfig } from "~/lib/config"
+import { ConfigProvider, Effect, Config } from "effect"
+import { ValidatedDatabaseConfig } from "~/lib/config-validation"
 import { psqlCommand, drizzleCommand, execWithTimeout } from "./utils/bun-exec"
+
+// Simplified config for database operations
+const loadDatabaseConfig = Effect.gen(function* () {
+  const databaseUrl = yield* ValidatedDatabaseConfig
+  const environment = yield* Config.withDefault(
+    Config.literal("development", "production", "test")("NODE_ENV"),
+    "development" as const,
+  )
+  const host = yield* Config.withDefault(Config.string("HOST"), "localhost")
+  const port = yield* Config.withDefault(Config.number("PORT"), 3000)
+
+  return {
+    database: { url: databaseUrl },
+    server: { host, port },
+    environment,
+  }
+})
 
 const setupDatabase = Effect.gen(function* () {
   console.log(
-    "🚀 Setting up database (Hey Babe - Phoenix-inspired with Bun + Effect)...",
+    "🚀 Setting up database (Echo Stack - Phoenix-inspired with Bun + Effect)...",
   )
 
   // Load and validate configuration
   console.log("📋 Loading database configuration...")
-  const config = yield* loadConfig
+  const config = yield* loadDatabaseConfig
 
   console.log(`   Environment: ${config.server.host}:${config.server.port}`)
   console.log(

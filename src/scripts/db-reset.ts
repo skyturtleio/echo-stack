@@ -18,19 +18,36 @@
  * Usage: bun run db:reset
  */
 
-import { ConfigProvider, Effect } from "effect"
-import { loadConfig } from "~/lib/config"
+import { ConfigProvider, Effect, Config } from "effect"
+import { ValidatedDatabaseConfig } from "~/lib/config-validation"
 import { psqlCommand, drizzleCommand, execWithTimeout } from "./utils/bun-exec"
+
+// Simplified config for database operations
+const loadDatabaseConfig = Effect.gen(function* () {
+  const databaseUrl = yield* ValidatedDatabaseConfig
+  const environment = yield* Config.withDefault(
+    Config.literal("development", "production", "test")("NODE_ENV"),
+    "development" as const,
+  )
+  const host = yield* Config.withDefault(Config.string("HOST"), "localhost")
+  const port = yield* Config.withDefault(Config.number("PORT"), 3000)
+
+  return {
+    database: { url: databaseUrl },
+    server: { host, port },
+    environment,
+  }
+})
 
 const resetDatabase = Effect.gen(function* () {
   console.log(
-    "🔥 Resetting database (Hey Babe - Phoenix-inspired with Bun + Effect)...",
+    "🔥 Resetting database (Echo Stack - Phoenix-inspired with Bun + Effect)...",
   )
   console.log("⚠️  WARNING: This will destroy ALL data in the database!")
 
   // Load and validate configuration
   console.log("\n📋 Loading database configuration...")
-  const config = yield* loadConfig
+  const config = yield* loadDatabaseConfig
 
   // Safety check - only allow reset in development
   if (config.server.host !== "localhost" && config.server.port !== 3000) {
@@ -63,7 +80,7 @@ const resetDatabase = Effect.gen(function* () {
 
     console.log("\n✅ Database reset complete!")
     console.log("\n🎯 Next steps:")
-    console.log("   • Start the dev server: bun run dev")
+    console.log("   • Start the dev server: bun run takeoff")
     console.log("   • View database: bun run db:studio")
     console.log("   • Test database: bun run db:test")
   } catch (error) {

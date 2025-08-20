@@ -9,14 +9,31 @@
  * Usage: bun run db:seed
  */
 
-import { Effect, ConfigProvider } from "effect"
-import { loadConfig } from "~/lib/config"
+import { Effect, ConfigProvider, Config } from "effect"
+import { ValidatedDatabaseConfig } from "~/lib/config-validation"
+
+// Simplified config for database operations
+const loadDatabaseConfig = Effect.gen(function* () {
+  const databaseUrl = yield* ValidatedDatabaseConfig
+  const environment = yield* Config.withDefault(
+    Config.literal("development", "production", "test")("NODE_ENV"),
+    "development" as const,
+  )
+  const host = yield* Config.withDefault(Config.string("HOST"), "localhost")
+  const port = yield* Config.withDefault(Config.number("PORT"), 3000)
+
+  return {
+    database: { url: databaseUrl },
+    server: { host, port },
+    environment,
+  }
+})
 
 const seedDatabase = Effect.gen(function* () {
   console.log("🌱 Seeding database with development data...")
 
   // Load configuration
-  const config = yield* loadConfig
+  const config = yield* loadDatabaseConfig
   console.log(`   Environment: ${config.server.host}:${config.server.port}`)
 
   try {
