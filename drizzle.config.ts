@@ -52,7 +52,7 @@ const getConfig = (): { databaseUrl: string; environment: string } => {
 
     // Fallback to development settings if config fails
     return {
-      databaseUrl: "postgresql://leo:@localhost:5432/hey_babe_triplit_dev",
+      databaseUrl: "postgresql://user:password@localhost:5432/echo_stack_dev",
       environment: "development",
     }
   }
@@ -80,10 +80,15 @@ export default defineConfig({
 
   // Migration configuration
   migrations: {
-    prefix: "timestamp",
+    prefix: "timestamp", // Generates: YYYYMMDDHHMMSS_migration_name.sql
     table: "__drizzle_migrations",
     schema: "public",
   },
+
+  // Note: After generating migrations with `bun run db:generate`,
+  // rename the file to use descriptive names:
+  // 20250820170923_workable_onslaught.sql -> 20250820170923_create_auth_tables.sql
+  // Remember to update the "tag" in meta/_journal.json to match the new filename
 
   // Development settings - now using Effect Config
   verbose: config.environment === "development",

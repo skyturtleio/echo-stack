@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, json } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core"
 
 /**
  * Database Schema for Echo Stack
@@ -101,42 +101,44 @@ export const jwks = pgTable("jwks", {
 })
 
 // =============================================================================
-// Example Application Tables (customize for your needs)
+// Example Application Tables (commented out for clean initial migration)
 // =============================================================================
+//
+// Uncomment and customize these tables for your application needs:
+//
+// /**
+//  * User profiles - extends BetterAuth user data
+//  * Example of how to add additional user data beyond authentication
+//  */
+// export const profiles = pgTable("profiles", {
+//   id: text("id")
+//     .primaryKey()
+//     .references(() => user.id, { onDelete: "cascade" }),
+//   timezone: text("timezone").notNull().default("UTC"),
+//   preferences: json("preferences"),
+//   createdAt: timestamp("createdAt").notNull().defaultNow(),
+//   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+// })
 
-/**
- * User profiles - extends BetterAuth user data
- * Example of how to add additional user data beyond authentication
- */
-export const profiles = pgTable("profiles", {
-  id: text("id")
-    .primaryKey()
-    .references(() => user.id, { onDelete: "cascade" }),
-  timezone: text("timezone").notNull().default("UTC"),
-  preferences: json("preferences"),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-})
-
-/**
- * Example relationships table - customize for your app's needs
- * This shows how to create relationships between users
- */
-export const relationships = pgTable("relationships", {
-  id: text("id").primaryKey(),
-  userId: text("userId")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  relatedUserId: text("relatedUserId").references(() => user.id, {
-    onDelete: "cascade",
-  }),
-  type: text("type").notNull().default("connection"),
-  status: text("status", { enum: ["pending", "active", "inactive"] })
-    .notNull()
-    .default("pending"),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-})
+// /**
+//  * Example relationships table - customize for your app's needs
+//  * This shows how to create relationships between users
+//  */
+// export const relationships = pgTable("relationships", {
+//   id: text("id").primaryKey(),
+//   userId: text("userId")
+//     .notNull()
+//     .references(() => user.id, { onDelete: "cascade" }),
+//   relatedUserId: text("relatedUserId").references(() => user.id, {
+//     onDelete: "cascade",
+//   }),
+//   type: text("type").notNull().default("connection"),
+//   status: text("status", { enum: ["pending", "active", "inactive"] })
+//     .notNull()
+//     .default("pending"),
+//   createdAt: timestamp("createdAt").notNull().defaultNow(),
+//   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+// })
 
 // =============================================================================
 // Type Exports for TypeScript
@@ -160,8 +162,9 @@ export type NewTrustedToken = typeof trustedToken.$inferInsert
 export type Jwks = typeof jwks.$inferSelect
 export type NewJwks = typeof jwks.$inferInsert
 
-export type Profile = typeof profiles.$inferSelect
-export type NewProfile = typeof profiles.$inferInsert
+// Uncomment these when you add the tables above:
+// export type Profile = typeof profiles.$inferSelect
+// export type NewProfile = typeof profiles.$inferInsert
 
-export type Relationship = typeof relationships.$inferSelect
-export type NewRelationship = typeof relationships.$inferInsert
+// export type Relationship = typeof relationships.$inferSelect
+// export type NewRelationship = typeof relationships.$inferInsert

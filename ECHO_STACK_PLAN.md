@@ -175,6 +175,28 @@ Demo files specific to todo features
 
 **Total Mission Time: ~3 hours for combat-ready Echo Stack**
 
+## Migration Naming Convention
+
+Echo Stack uses descriptive migration names for better maintainability:
+
+```bash
+# 1. Generate migration with Drizzle
+bun run db:generate
+
+# 2. Rename the generated file to be descriptive
+# From: 20250820170923_workable_onslaught.sql
+# To:   20250820170923_create_auth_tables.sql
+
+# 3. Update the tag in meta/_journal.json to match the new filename
+# "tag": "20250820170923_create_auth_tables"
+```
+
+Examples of good migration names:
+
+- `20250820170923_create_auth_tables.sql`
+- `20250820180000_add_user_profiles.sql`
+- `20250820190000_update_session_expiry.sql`
+
 ## Package.json Structure
 
 ```json
