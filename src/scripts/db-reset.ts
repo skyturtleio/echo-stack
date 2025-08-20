@@ -19,12 +19,12 @@
  */
 
 import { ConfigProvider, Effect, Config } from "effect"
-import { ValidatedDatabaseConfig } from "~/lib/config-validation"
+import { AutoDatabaseConfig } from "~/lib/database-naming"
 import { psqlCommand, drizzleCommand, execWithTimeout } from "./utils/bun-exec"
 
-// Simplified config for database operations
+// Phoenix-style database config with auto-naming
 const loadDatabaseConfig = Effect.gen(function* () {
-  const databaseUrl = yield* ValidatedDatabaseConfig
+  const dbConfig = yield* AutoDatabaseConfig
   const environment = yield* Config.withDefault(
     Config.literal("development", "production", "test")("NODE_ENV"),
     "development" as const,
@@ -33,7 +33,7 @@ const loadDatabaseConfig = Effect.gen(function* () {
   const port = yield* Config.withDefault(Config.number("PORT"), 3000)
 
   return {
-    database: { url: databaseUrl },
+    database: dbConfig,
     server: { host, port },
     environment,
   }
@@ -57,18 +57,19 @@ const resetDatabase = Effect.gen(function* () {
   }
 
   console.log(`   Environment: ${config.server.host}:${config.server.port}`)
+  console.log(`   Database: ${config.database.name} (auto-generated)`)
   console.log(
-    `   Database: ${config.database.url.replace(/\/\/.*@/, "//<credentials>@")}`,
+    `   URL: ${config.database.url.replace(/\/\/.*@/, "//<credentials>@")}`,
   )
 
   try {
     // Step 1: Drop database
     console.log("\n🗑️  Step 1: Dropping database...")
-    yield* dropDatabase(config.database.url)
+    yield* dropDatabase(config.database)
 
     // Step 2: Create database
     console.log("\n📦 Step 2: Creating fresh database...")
-    yield* createDatabase(config.database.url)
+    yield* createDatabase(config.database)
 
     // Step 3: Run migrations
     console.log("\n📦 Step 3: Running database migrations...")
@@ -89,32 +90,27 @@ const resetDatabase = Effect.gen(function* () {
   }
 })
 
-const dropDatabase = (databaseUrl: string) =>
+const dropDatabase = (dbConfig: { name: string; adminUrl: string }) =>
   Effect.gen(function* () {
-    // Extract database name from URL
-    const url = new URL(databaseUrl)
-    const dbName = url.pathname.slice(1) // Remove leading slash
-    const adminUrl = `${url.protocol}//${url.username}:${url.password}@${url.host}/postgres`
-
-    console.log(`   Dropping database '${dbName}'...`)
+    console.log(`   Dropping database '${dbConfig.name}'...`)
 
     // Terminate active connections first
     const terminateQuery = `
       SELECT pg_terminate_backend(pid)
       FROM pg_stat_activity
-      WHERE datname = '${dbName}' AND pid <> pg_backend_pid();
+      WHERE datname = '${dbConfig.name}' AND pid <> pg_backend_pid();
     `
 
-    const dropDbQuery = `DROP DATABASE IF EXISTS "${dbName}";`
+    const dropDbQuery = `DROP DATABASE IF EXISTS "${dbConfig.name}";`
 
     try {
       // First terminate connections
-      yield* psqlCommand(adminUrl, terminateQuery)
+      yield* psqlCommand(dbConfig.adminUrl, terminateQuery)
 
       // Then drop database
-      yield* psqlCommand(adminUrl, dropDbQuery)
+      yield* psqlCommand(dbConfig.adminUrl, dropDbQuery)
 
-      console.log(`   ✅ Database '${dbName}' dropped successfully`)
+      console.log(`   ✅ Database '${dbConfig.name}' dropped successfully`)
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
@@ -123,19 +119,14 @@ const dropDatabase = (databaseUrl: string) =>
     }
   })
 
-const createDatabase = (databaseUrl: string) =>
+const createDatabase = (dbConfig: { name: string; adminUrl: string }) =>
   Effect.gen(function* () {
-    // Extract database name from URL
-    const url = new URL(databaseUrl)
-    const dbName = url.pathname.slice(1) // Remove leading slash
-    const adminUrl = `${url.protocol}//${url.username}:${url.password}@${url.host}/postgres`
+    console.log(`   Creating database '${dbConfig.name}'...`)
 
-    console.log(`   Creating database '${dbName}'...`)
+    const createDbQuery = `CREATE DATABASE "${dbConfig.name}";`
 
-    const createDbQuery = `CREATE DATABASE "${dbName}";`
-
-    yield* psqlCommand(adminUrl, createDbQuery)
-    console.log(`   ✅ Database '${dbName}' created successfully`)
+    yield* psqlCommand(dbConfig.adminUrl, createDbQuery)
+    console.log(`   ✅ Database '${dbConfig.name}' created successfully`)
   })
 
 const runMigrations = () =>

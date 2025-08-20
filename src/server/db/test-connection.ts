@@ -7,19 +7,22 @@
  * before applying migrations.
  */
 
-import { Effect } from "effect"
-import { ValidatedDatabaseConfig } from "../../lib/config-validation"
+import { Effect, ConfigProvider } from "effect"
+import { AutoDatabaseConfig } from "../../lib/database-naming"
 import postgres from "postgres"
 
 const testDatabaseConnection = Effect.gen(function* () {
   console.log("🔍 Testing database connection...")
 
-  // Get validated database URL from Effect Config
-  const databaseUrl = yield* ValidatedDatabaseConfig
-  console.log(`📡 Connecting to: ${databaseUrl.replace(/:[^:@]*@/, ":****@")}`)
+  // Get auto-generated database configuration
+  const dbConfig = yield* AutoDatabaseConfig
+  console.log(`📡 Connecting to: ${dbConfig.url.replace(/:[^:@]*@/, ":****@")}`)
+  if (dbConfig.type === "auto") {
+    console.log(`🔄 Auto-generated database name: ${dbConfig.name}`)
+  }
 
   // Create postgres connection
-  const client = postgres(databaseUrl, {
+  const client = postgres(dbConfig.url, {
     max: 1,
     idle_timeout: 5,
     connect_timeout: 10,
@@ -79,8 +82,9 @@ const testDatabaseConnection = Effect.gen(function* () {
   }
 })
 
-// Run the test
+// Run the test with config provider
 const program = testDatabaseConnection.pipe(
+  Effect.withConfigProvider(ConfigProvider.fromEnv()),
   Effect.catchAll((error) =>
     Effect.sync(() => {
       console.error("❌ Database connection test failed:")

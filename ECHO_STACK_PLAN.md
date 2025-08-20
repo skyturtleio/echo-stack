@@ -175,6 +175,56 @@ Demo files specific to todo features
 
 **Total Mission Time: ~3 hours for combat-ready Echo Stack**
 
+## Database Naming Convention (Phoenix-Style)
+
+Echo Stack automatically generates database names based on your project name and environment:
+
+```bash
+# Project: echo-stack-starter
+# Development: echo_stack_starter_dev
+# Test: echo_stack_starter_test
+# Production: echo_stack_starter
+```
+
+### Configuration Options
+
+**Option 1: Phoenix-style (Recommended)**
+
+```env
+# Base URL without database name
+DATABASE_BASE_URL=postgresql://user:password@localhost:5432/
+NODE_ENV=development
+```
+
+**Option 2: Legacy (Full URL)**
+
+```env
+# Full URL with explicit database name
+DATABASE_URL=postgresql://user:password@localhost:5432/my_custom_db
+```
+
+### Database Commands
+
+```bash
+# Reset database (drop, create, migrate, seed)
+bun run landing  # or bun run db:reset
+
+# Setup database (create, migrate, seed)
+bun run db:setup
+
+# Health check
+bun run db:health
+
+# Generate new migration
+bun run db:generate
+```
+
+**No manual database creation needed!** Scripts automatically:
+
+- Create databases if they don't exist
+- Drop databases during reset
+- Handle environment-specific naming
+
 ## Migration Naming Convention
 
 Echo Stack uses descriptive migration names for better maintainability:

@@ -42,12 +42,48 @@ export const validateEmail = (email: string): boolean => {
 }
 
 /**
- * Enhanced database configuration with validation
+ * Enhanced database configuration with validation (legacy single URL)
  */
 export const ValidatedDatabaseConfig = Config.string("DATABASE_URL").pipe(
   Config.validate({
     message: "DATABASE_URL must be a valid PostgreSQL connection string",
     validation: validateDatabaseUrl,
+  }),
+)
+
+/**
+ * Enhanced database configuration with Phoenix-style auto-naming
+ */
+export const ValidatedDatabaseBaseConfig = Config.string(
+  "DATABASE_BASE_URL",
+).pipe(
+  Config.validate({
+    message:
+      "DATABASE_BASE_URL must be a valid PostgreSQL connection string without database name",
+    validation: (url: string) => {
+      try {
+        const parsed = new URL(url)
+
+        // Must be PostgreSQL
+        if (
+          !parsed.protocol.startsWith("postgresql") &&
+          !parsed.protocol.startsWith("postgres")
+        ) {
+          return false
+        }
+
+        // Must have host
+        if (!parsed.hostname) {
+          return false
+        }
+
+        // Should not include a specific database name in the path (or should be empty/postgres)
+        const path = parsed.pathname
+        return path === "/" || path === "" || path === "/postgres"
+      } catch {
+        return false
+      }
+    },
   }),
 )
 

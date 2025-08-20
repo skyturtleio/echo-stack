@@ -15,12 +15,12 @@
  */
 
 import { ConfigProvider, Effect, Config } from "effect"
-import { ValidatedDatabaseConfig } from "~/lib/config-validation"
+import { AutoDatabaseConfig } from "~/lib/database-naming"
 import { psqlCommand, drizzleCommand, execWithTimeout } from "./utils/bun-exec"
 
-// Simplified config for database operations
+// Phoenix-style database config with auto-naming
 const loadDatabaseConfig = Effect.gen(function* () {
-  const databaseUrl = yield* ValidatedDatabaseConfig
+  const dbConfig = yield* AutoDatabaseConfig
   const environment = yield* Config.withDefault(
     Config.literal("development", "production", "test")("NODE_ENV"),
     "development" as const,
@@ -29,7 +29,7 @@ const loadDatabaseConfig = Effect.gen(function* () {
   const port = yield* Config.withDefault(Config.number("PORT"), 3000)
 
   return {
-    database: { url: databaseUrl },
+    database: dbConfig,
     server: { host, port },
     environment,
   }

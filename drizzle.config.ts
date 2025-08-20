@@ -1,6 +1,6 @@
 import { defineConfig } from "drizzle-kit"
 import { Effect, ConfigProvider, Config } from "effect"
-import { ValidatedDatabaseConfig } from "./src/lib/config-validation"
+import { AutoDatabaseConfig } from "./src/lib/database-naming"
 
 /**
  * Drizzle Kit Configuration with Effect Config Integration
@@ -17,9 +17,9 @@ import { ValidatedDatabaseConfig } from "./src/lib/config-validation"
  * use the same validation as the rest of the application.
  */
 
-// Load configuration using Effect Config
+// Load configuration using Effect Config with Phoenix-style auto-naming
 const loadConfig = Effect.gen(function* () {
-  const databaseUrl = yield* ValidatedDatabaseConfig
+  const dbConfig = yield* AutoDatabaseConfig
   const environment = yield* Config.literal(
     "development",
     "production",
@@ -27,7 +27,7 @@ const loadConfig = Effect.gen(function* () {
   )("NODE_ENV")
 
   return {
-    databaseUrl,
+    databaseUrl: dbConfig.url,
     environment,
   }
 })
@@ -52,7 +52,8 @@ const getConfig = (): { databaseUrl: string; environment: string } => {
 
     // Fallback to development settings if config fails
     return {
-      databaseUrl: "postgresql://user:password@localhost:5432/echo_stack_dev",
+      databaseUrl:
+        "postgresql://user:password@localhost:5432/echo_stack_starter_dev",
       environment: "development",
     }
   }
