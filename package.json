@@ -1,8 +1,28 @@
 {
-  "name": "hey-babe-triplit",
-  "private": true,
+  "name": "echo-stack-starter",
+  "version": "1.0.0",
+  "description": "🛩️ Single-seat full-stack starter kit for the solo developer",
+  "keywords": [
+    "effect",
+    "tanstack",
+    "fullstack",
+    "typescript",
+    "single-developer",
+    "echo-stack"
+  ],
+  "author": "Echo Squadron",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/echo-stack-starter.git"
+  },
+  "private": false,
   "type": "module",
   "scripts": {
+    "preflight": "bun run config:validate && bun run db:health",
+    "takeoff": "bun run dev",
+    "mission": "bun run build && bun run start",
+    "landing": "bun run db:reset",
     "dev": "pkill -f 'vite dev' || true && vite dev --port 3000",
     "dev:clean": "pkill -f 'vite dev' || true && sleep 1 && vite dev --port 3000",
     "start": "node .output/server/index.mjs",
@@ -18,15 +38,14 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:drop": "drizzle-kit drop",
+    "db:health": "bun run src/server/db/test-connection.ts",
     "db:test": "bun run src/server/db/test-connection.ts",
     "db:test:new": "bun run src/server/db/test-connection-new.ts",
     "db:setup": "bun run src/scripts/db-setup.ts",
     "db:reset": "bun run src/scripts/db-reset.ts",
     "db:seed": "bun run src/scripts/db-seed.ts",
     "db:help": "bun run src/scripts/db-help.ts",
-    "config:validate": "bun run src/scripts/validate-config-consistency.ts",
-    "demo:resources": "bun run src/demo/resource-management-demo.ts",
-    "demo:auth": "bun run src/demo/auth-service-demo.ts"
+    "config:validate": "bun run src/scripts/validate-config-consistency.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.6",

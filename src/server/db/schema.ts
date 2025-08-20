@@ -1,11 +1,11 @@
 import { pgTable, text, timestamp, boolean, json } from "drizzle-orm/pg-core"
 
 /**
- * Database Schema for Hey Babe Couples Todo App
+ * Database Schema for Echo Stack
  *
  * This schema includes:
- * 1. BetterAuth tables for authentication
- * 2. Application-specific tables (for future phases)
+ * 1. BetterAuth tables for authentication (production-ready)
+ * 2. Example application tables (customize for your needs)
  */
 
 // =============================================================================
@@ -101,12 +101,12 @@ export const jwks = pgTable("jwks", {
 })
 
 // =============================================================================
-// Application Tables (for future phases)
+// Example Application Tables (customize for your needs)
 // =============================================================================
 
 /**
  * User profiles - extends BetterAuth user data
- * Maps to BetterAuth user.id for consistency with Triplit permissions
+ * Example of how to add additional user data beyond authentication
  */
 export const profiles = pgTable("profiles", {
   id: text("id")
@@ -119,19 +119,19 @@ export const profiles = pgTable("profiles", {
 })
 
 /**
- * Couples linking - for sharing todos between partners
- * This will be used by Triplit for permissions and data access
+ * Example relationships table - customize for your app's needs
+ * This shows how to create relationships between users
  */
-export const couples = pgTable("couples", {
+export const relationships = pgTable("relationships", {
   id: text("id").primaryKey(),
-  partner1Id: text("partner1Id")
+  userId: text("userId")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  partner2Id: text("partner2Id").references(() => user.id, {
+  relatedUserId: text("relatedUserId").references(() => user.id, {
     onDelete: "cascade",
   }),
-  inviteCode: text("inviteCode").unique(),
-  status: text("status", { enum: ["pending", "active"] })
+  type: text("type").notNull().default("connection"),
+  status: text("status", { enum: ["pending", "active", "inactive"] })
     .notNull()
     .default("pending"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
@@ -163,5 +163,5 @@ export type NewJwks = typeof jwks.$inferInsert
 export type Profile = typeof profiles.$inferSelect
 export type NewProfile = typeof profiles.$inferInsert
 
-export type Couple = typeof couples.$inferSelect
-export type NewCouple = typeof couples.$inferInsert
+export type Relationship = typeof relationships.$inferSelect
+export type NewRelationship = typeof relationships.$inferInsert

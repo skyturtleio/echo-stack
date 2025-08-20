@@ -32,7 +32,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Hey Babe - Couples Todo App",
+        title: "Echo Stack - Single-Seat Full-Stack Starter",
       },
     ],
     links: [

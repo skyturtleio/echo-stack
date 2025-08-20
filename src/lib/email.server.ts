@@ -3,7 +3,7 @@ import { Effect, Config, Redacted } from "effect"
 import { getConfigProvider } from "./config-provider"
 
 /**
- * Email Service for Hey Babe
+ * Email Service for Echo Stack
  *
  * Features:
  * - Development: Mailpit SMTP server (localhost:1025)
@@ -124,28 +124,28 @@ export const sendVerificationEmail = async ({
   await sendEmail({
     to,
     name,
-    subject: "Welcome to Hey Babe! Verify your email",
+    subject: "Welcome! Verify your email",
     html: `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Verify Your Email - Hey Babe</title>
+        <title>Verify Your Email - Echo Stack</title>
       </head>
       <body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
         <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Hey Babe! 💕</h1>
-            <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Welcome to the couples todo app</p>
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Echo Stack ✈️</h1>
+            <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Single-seat full-stack starter</p>
           </div>
           
           <!-- Content -->
           <div style="padding: 40px 30px;">
             <h2 style="color: #333; margin: 0 0 20px 0; font-size: 22px;">Hi ${name}! 👋</h2>
             <p style="color: #555; line-height: 1.6; margin: 0 0 25px 0;">
-              Welcome to Hey Babe! We're excited to help you and your partner stay organized together. 
+              Welcome to Echo Stack! We're excited to help you build amazing applications. 
               To get started, please verify your email address by clicking the button below.
             </p>
             
@@ -168,7 +168,7 @@ export const sendVerificationEmail = async ({
             
             <p style="color: #666; font-size: 14px; line-height: 1.5; margin: 25px 0 0 0;">
               <strong>Didn't create an account?</strong><br>
-              If you didn't sign up for Hey Babe, you can safely ignore this email.
+              If you didn't sign up for this application, you can safely ignore this email.
             </p>
             
             <!-- Link fallback -->
@@ -228,46 +228,6 @@ export const sendPasswordResetEmail = async ({
         <p style="color: #666; font-size: 14px;">
           Or copy and paste this link: <br>
           <a href="${resetUrl}">${resetUrl}</a>
-        </p>
-      </div>
-    `,
-  })
-}
-
-/**
- * Send couple invitation email
- */
-export const sendCoupleInviteEmail = async ({
-  to,
-  fromName,
-  inviteCode,
-}: {
-  to: string
-  fromName: string
-  inviteCode: string
-}) => {
-  await sendEmail({
-    to,
-    name: to.split("@")[0] || "there", // Use email prefix as name fallback
-    subject: `${fromName} invited you to Hey Babe!`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #333;">Hey Babe! 💕</h1>
-        <p><strong>${fromName}</strong> has invited you to join Hey Babe, a collaborative todo app for couples.</p>
-        <p>Use this invite code when you sign up:</p>
-        <div style="margin: 30px 0; text-align: center;">
-          <div style="background: #f8f9fa; border: 2px dashed #007bff; padding: 20px; font-size: 24px; font-weight: bold; letter-spacing: 2px;">
-            ${inviteCode}
-          </div>
-        </div>
-        <div style="margin: 30px 0;">
-           <a href="${(await Effect.runPromise(EmailConfig)).betterAuthUrl}/signup?invite=${inviteCode}"
-             style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-            Join Hey Babe
-          </a>
-        </div>
-        <p style="color: #666; font-size: 14px;">
-          Hey Babe helps couples stay organized with shared todos, private tasks, and timeline views.
         </p>
       </div>
     `,

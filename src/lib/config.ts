@@ -3,7 +3,7 @@ import { Config, Effect, Redacted } from "effect"
 /**
  * Application Configuration Schema - Strict Mode
  *
- * This module defines type-safe configuration for the Hey Babe couples todo app.
+ * This module defines type-safe configuration for Echo Stack applications.
  * It uses a STRICT approach - no defaults are provided. All environment variables
  * must be explicitly set, ensuring developers are aware of all required configuration.
  *
@@ -28,11 +28,10 @@ export const AuthConfig = Config.all({
   url: Config.string("BETTER_AUTH_URL"),
 })
 
-// Triplit Configuration - NO DEFAULTS
-export const TriliptConfig = Config.all({
-  jwtSecret: Config.redacted("EXTERNAL_JWT_SECRET"),
-  databaseUrl: Config.string("LOCAL_DATABASE_URL"),
-  corsOrigin: Config.string("CORS_ORIGIN"),
+// JWT Configuration for integrations - NO DEFAULTS
+export const JWTConfig = Config.all({
+  secret: Config.redacted("JWT_SECRET"),
+  issuer: Config.string("JWT_ISSUER"),
 })
 
 // Email Configuration - NO DEFAULTS
@@ -70,7 +69,7 @@ export const AppConfig = Config.all({
   server: ServerConfig,
   database: DatabaseConfig,
   auth: AuthConfig,
-  triplit: TriliptConfig,
+  jwt: JWTConfig,
   email: EmailConfig,
 })
 
@@ -87,9 +86,8 @@ const REQUIRED_VARS = {
     "DATABASE_URL",
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
-    "EXTERNAL_JWT_SECRET",
-    "LOCAL_DATABASE_URL",
-    "CORS_ORIGIN",
+    "JWT_SECRET",
+    "JWT_ISSUER",
     "SMTP_HOST",
     "SMTP_PORT",
   ],
@@ -100,9 +98,8 @@ const REQUIRED_VARS = {
     "DATABASE_URL",
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
-    "EXTERNAL_JWT_SECRET",
-    "LOCAL_DATABASE_URL",
-    "CORS_ORIGIN",
+    "JWT_SECRET",
+    "JWT_ISSUER",
     "RESEND_API_KEY",
     "RESEND_FROM_EMAIL",
   ],
@@ -113,9 +110,8 @@ const REQUIRED_VARS = {
     "DATABASE_URL",
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
-    "EXTERNAL_JWT_SECRET",
-    "LOCAL_DATABASE_URL",
-    "CORS_ORIGIN",
+    "JWT_SECRET",
+    "JWT_ISSUER",
     "SMTP_HOST",
     "SMTP_PORT",
   ],
@@ -220,11 +216,11 @@ export const loadConfig = Effect.gen(function* () {
       )
     }
 
-    const jwtSecretLength = Redacted.value(config.triplit.jwtSecret).length
+    const jwtSecretLength = Redacted.value(config.jwt.secret).length
     if (jwtSecretLength < 32) {
       return yield* Effect.fail(
         new Error(
-          `EXTERNAL_JWT_SECRET must be at least 32 characters (current: ${jwtSecretLength})`,
+          `JWT_SECRET must be at least 32 characters (current: ${jwtSecretLength})`,
         ),
       )
     }

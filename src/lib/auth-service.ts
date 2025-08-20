@@ -115,7 +115,7 @@ const createAuthInstance = Effect.gen(function* () {
           },
         },
         jwt: {
-          issuer: "hey-babe-app",
+          issuer: "echo-stack-app",
         },
       }),
       reactStartCookies(),
