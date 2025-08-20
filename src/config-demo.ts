@@ -1,0 +1,25 @@
+#!/usr/bin/env tsx
+
+/**
+ * Configuration Demo Script
+ *
+ * This script demonstrates the Effect Config setup for the Hey Babe project.
+ * Run with: `npx tsx src/config-demo.ts`
+ */
+
+import { runExamples } from "./lib/example"
+
+async function main() {
+  console.log("🎯 Hey Babe - Effect Config Demo")
+  console.log("=".repeat(50))
+
+  try {
+    await runExamples()
+  } catch (error) {
+    console.error("Demo failed:", error)
+    process.exit(1)
+  }
+}
+
+// Run the demo
+main().catch(console.error)

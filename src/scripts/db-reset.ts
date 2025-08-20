@@ -1,0 +1,178 @@
+#!/usr/bin/env bun
+
+/**
+ * Database Reset Script - Phoenix-inspired with Bun APIs and Effect
+ *
+ * Equivalent to Phoenix's `mix ecto.reset`
+ * This script:
+ * 1. Drops the entire database
+ * 2. Recreates the database
+ * 3. Runs all migrations
+ * 4. Seeds with development data
+ *
+ * ⚠️  WARNING: This will completely destroy all data in the database!
+ * Only use this in development environments.
+ *
+ * Uses Bun's native APIs and Effect for structured concurrency and resource management
+ *
+ * Usage: bun run db:reset
+ */
+
+import { ConfigProvider, Effect } from "effect"
+import { loadConfig } from "~/lib/config"
+import { psqlCommand, drizzleCommand, execWithTimeout } from "./utils/bun-exec"
+
+const resetDatabase = Effect.gen(function* () {
+  console.log(
+    "🔥 Resetting database (Hey Babe - Phoenix-inspired with Bun + Effect)...",
+  )
+  console.log("⚠️  WARNING: This will destroy ALL data in the database!")
+
+  // Load and validate configuration
+  console.log("\n📋 Loading database configuration...")
+  const config = yield* loadConfig
+
+  // Safety check - only allow reset in development
+  if (config.server.host !== "localhost" && config.server.port !== 3000) {
+    yield* Effect.fail(
+      new Error("Database reset is only allowed in development environment"),
+    )
+  }
+
+  console.log(`   Environment: ${config.server.host}:${config.server.port}`)
+  console.log(
+    `   Database: ${config.database.url.replace(/\/\/.*@/, "//<credentials>@")}`,
+  )
+
+  try {
+    // Step 1: Drop database
+    console.log("\n🗑️  Step 1: Dropping database...")
+    yield* dropDatabase(config.database.url)
+
+    // Step 2: Create database
+    console.log("\n📦 Step 2: Creating fresh database...")
+    yield* createDatabase(config.database.url)
+
+    // Step 3: Run migrations
+    console.log("\n📦 Step 3: Running database migrations...")
+    yield* runMigrations()
+
+    // Step 4: Seed database
+    console.log("\n📦 Step 4: Seeding database with development data...")
+    yield* seedDatabase()
+
+    console.log("\n✅ Database reset complete!")
+    console.log("\n🎯 Next steps:")
+    console.log("   • Start the dev server: bun run dev")
+    console.log("   • View database: bun run db:studio")
+    console.log("   • Test database: bun run db:test")
+  } catch (error) {
+    console.error("\n❌ Database reset failed:")
+    yield* Effect.fail(error)
+  }
+})
+
+const dropDatabase = (databaseUrl: string) =>
+  Effect.gen(function* () {
+    // Extract database name from URL
+    const url = new URL(databaseUrl)
+    const dbName = url.pathname.slice(1) // Remove leading slash
+    const adminUrl = `${url.protocol}//${url.username}:${url.password}@${url.host}/postgres`
+
+    console.log(`   Dropping database '${dbName}'...`)
+
+    // Terminate active connections first
+    const terminateQuery = `
+      SELECT pg_terminate_backend(pid)
+      FROM pg_stat_activity
+      WHERE datname = '${dbName}' AND pid <> pg_backend_pid();
+    `
+
+    const dropDbQuery = `DROP DATABASE IF EXISTS "${dbName}";`
+
+    try {
+      // First terminate connections
+      yield* psqlCommand(adminUrl, terminateQuery)
+
+      // Then drop database
+      yield* psqlCommand(adminUrl, dropDbQuery)
+
+      console.log(`   ✅ Database '${dbName}' dropped successfully`)
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      console.log(`   ⚠️  Could not drop database: ${errorMessage}`)
+      throw error
+    }
+  })
+
+const createDatabase = (databaseUrl: string) =>
+  Effect.gen(function* () {
+    // Extract database name from URL
+    const url = new URL(databaseUrl)
+    const dbName = url.pathname.slice(1) // Remove leading slash
+    const adminUrl = `${url.protocol}//${url.username}:${url.password}@${url.host}/postgres`
+
+    console.log(`   Creating database '${dbName}'...`)
+
+    const createDbQuery = `CREATE DATABASE "${dbName}";`
+
+    yield* psqlCommand(adminUrl, createDbQuery)
+    console.log(`   ✅ Database '${dbName}' created successfully`)
+  })
+
+const runMigrations = () =>
+  Effect.gen(function* () {
+    console.log("   Running Drizzle migrations...")
+
+    const result = yield* drizzleCommand("migrate")
+
+    console.log("   ✅ Migrations completed successfully")
+    if (result.stdout) console.log(`   ${result.stdout}`)
+    if (result.stderr) console.log(`   ⚠️  ${result.stderr}`)
+  })
+
+const seedDatabase = () =>
+  Effect.gen(function* () {
+    console.log("   Running database seeds...")
+
+    try {
+      const result = yield* execWithTimeout(
+        "bun run src/scripts/db-seed.ts",
+        30000,
+      )
+      console.log("   ✅ Database seeded successfully")
+      if (result.stdout) console.log(`   ${result.stdout}`)
+    } catch {
+      console.log("   ⚠️  Seeding skipped (seed script not found or failed)")
+      console.log("       You can create seeds at src/scripts/db-seed.ts")
+    }
+  })
+
+// Main execution with safety prompts
+const program = Effect.gen(function* () {
+  console.log("🚨 DANGER ZONE: Database Reset")
+  console.log("This will permanently delete all data!")
+  console.log("Press Ctrl+C to cancel, or wait 3 seconds to continue...")
+
+  // Wait 3 seconds to give user time to cancel
+  yield* Effect.sleep("3 seconds")
+
+  yield* resetDatabase
+}).pipe(
+  Effect.withConfigProvider(ConfigProvider.fromEnv()),
+  Effect.catchAll((error) =>
+    Effect.gen(function* () {
+      console.error(`\n❌ Reset failed: ${error}`)
+      console.error("\n🔧 Troubleshooting:")
+      console.error("   • Ensure PostgreSQL is running")
+      console.error("   • Check DATABASE_URL in .env file")
+      console.error("   • Verify database credentials")
+      console.error("   • Close all database connections")
+      console.error("   • Try: bun run db:test")
+      yield* Effect.fail(new Error("Database reset failed"))
+    }),
+  ),
+)
+
+Effect.runPromise(program).catch(() => process.exit(1))
