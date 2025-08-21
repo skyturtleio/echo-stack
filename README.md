@@ -184,7 +184,9 @@ Echo Stack automatically generates database names based on your project, elimina
 
 #### How It Works
 
-The database naming system works through these steps:
+The database naming system uses **smart configuration detection** that automatically chooses between two styles:
+
+**Phoenix-style Detection (DATABASE_BASE_URL)**:
 
 1. **Project Discovery**: Reads your `package.json` file to get the project name
 2. **Name Normalization**: Converts hyphens to underscores and makes lowercase
@@ -194,6 +196,12 @@ The database naming system works through these steps:
    - `production` → no suffix
 4. **Automatic URL Construction**: Effect.ts services automatically build the full database URL
 5. **Zero Configuration**: All database operations use the correct database without manual setup
+
+**Legacy-style Detection (DATABASE_URL)**:
+
+1. **Direct URL Usage**: Uses the exact database URL you provide
+2. **URL Parsing**: Extracts database name and connection details from the full URL
+3. **Admin URL Generation**: Automatically creates admin connection URLs for database scripts
 
 #### Benefits
 
@@ -224,10 +232,20 @@ DATABASE_URL=postgresql://user:password@localhost:5432/my_custom_db
 # Result: Uses exactly the database you specify
 ```
 
+**Smart Detection Process:**
+
+The system automatically detects which configuration style you're using:
+
+1. **Checks for DATABASE_BASE_URL first** → Uses Phoenix-style auto-naming
+2. **Falls back to DATABASE_URL** → Uses Legacy-style explicit naming
+3. **Works with either style** → No configuration needed, just set your preferred option
+
 **When to use each:**
 
-- **Phoenix-style**: Perfect for new projects, teams, and consistent environments
-- **Legacy**: When migrating existing projects or need specific database names
+- **Phoenix-style** (`DATABASE_BASE_URL`): Perfect for new projects, teams, and consistent environments
+- **Legacy** (`DATABASE_URL`): When migrating existing projects or need specific database names
+
+**⚠️ Important**: Use only ONE option in your `.env` file - the system automatically detects which style you're using and configures accordingly.
 
 ## Authentication System 🔐
 

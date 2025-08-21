@@ -1,6 +1,7 @@
 import { Config, Context, Effect, Layer } from "effect"
 import { ConfigurationError, ConfigurationValidationError } from "./errors"
 import { getConfigProvider } from "./config-provider"
+import { AutoDatabaseConfig } from "./database-naming"
 
 /**
  * Centralized Configuration Service
@@ -13,6 +14,9 @@ import { getConfigProvider } from "./config-provider"
 // Configuration interfaces
 export interface DatabaseConfig {
   readonly url: string
+  readonly type?: "auto" | "legacy"
+  readonly name?: string
+  readonly adminUrl?: string
 }
 
 export interface AuthConfig {
@@ -95,10 +99,6 @@ const validateUrl = (url: string): boolean => {
   }
 }
 
-const validateDatabaseUrl = (url: string): boolean => {
-  return url.startsWith("postgresql://") || url.startsWith("postgres://")
-}
-
 const validatePort = (port: number): boolean => {
   return port > 0 && port <= 65535
 }
@@ -111,15 +111,6 @@ const validateEmail = (email: string): boolean => {
 /**
  * Configuration schema with validation
  */
-const DatabaseConfigSchema = Config.all({
-  url: Config.string("DATABASE_URL").pipe(
-    Config.validate({
-      message: "DATABASE_URL must be a valid PostgreSQL connection string",
-      validation: validateDatabaseUrl,
-    }),
-  ),
-})
-
 const AuthConfigSchema = Config.all({
   secret: Config.string("BETTER_AUTH_SECRET").pipe(
     Config.validate({
@@ -186,7 +177,6 @@ const JWTConfigSchema = Config.all({
 const AppConfigSchema = Config.all({
   environment: Config.literal("development", "production", "test")("NODE_ENV"),
   server: ServerConfigSchema,
-  database: DatabaseConfigSchema,
   auth: AuthConfigSchema,
   smtp: SmtpConfigSchema,
   resend: ResendConfigSchema,
@@ -194,11 +184,23 @@ const AppConfigSchema = Config.all({
 })
 
 /**
- * Load and transform configuration
+ * Load and transform configuration with smart database detection
  */
 const loadConfiguration = Effect.gen(function* () {
   try {
+    // First, get the smart database configuration
+    const autoDbConfig = yield* AutoDatabaseConfig
+
+    // Then load the rest of the configuration
     const config = yield* AppConfigSchema
+
+    // Create enhanced database config with smart detection results
+    const databaseConfig: DatabaseConfig = {
+      url: autoDbConfig.url,
+      type: autoDbConfig.type,
+      name: autoDbConfig.name,
+      adminUrl: autoDbConfig.adminUrl,
+    }
 
     // Determine email provider based on environment
     const emailProvider =
@@ -237,7 +239,7 @@ const loadConfiguration = Effect.gen(function* () {
     const appConfig: AppConfig = {
       environment: config.environment,
       server: config.server,
-      database: config.database,
+      database: databaseConfig, // Use the enhanced database config
       auth: config.auth,
       email: emailConfig,
       jwt: config.jwt,
