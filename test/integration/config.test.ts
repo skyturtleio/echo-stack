@@ -8,8 +8,12 @@ import {
   getEmailConfig,
   isDevelopment,
   isProduction,
-} from "./effect-config"
-import { Logger, LoggerLayer, aviationMessages } from "./logger-service"
+} from "../../src/lib/effect-config"
+import {
+  Logger,
+  LoggerLayer,
+  aviationMessages,
+} from "../../src/lib/logger-service"
 
 /**
  * Example Usage of Effect Config
@@ -23,7 +27,7 @@ import { Logger, LoggerLayer, aviationMessages } from "./logger-service"
 export const basicExample = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Loading basic configuration", {
+  yield* logger.info(aviationMessages.starting("basic configuration"), {
     service: "config-example",
     operation: "basic-config",
   })
@@ -50,7 +54,7 @@ export const basicExample = Effect.gen(function* () {
 export const validatedExample = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Loading validated configuration", {
+  yield* logger.info(aviationMessages.starting("validated configuration"), {
     service: "config-example",
     operation: "validated-config",
   })
@@ -70,10 +74,13 @@ export const validatedExample = Effect.gen(function* () {
 export const environmentExample = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Checking environment-specific configuration", {
-    service: "config-example",
-    operation: "environment-check",
-  })
+  yield* logger.info(
+    aviationMessages.starting("environment-specific configuration"),
+    {
+      service: "config-example",
+      operation: "environment-check",
+    },
+  )
 
   const isDev = yield* isDevelopment
   const isProd = yield* isProduction
@@ -100,7 +107,7 @@ export const environmentExample = Effect.gen(function* () {
 export const testProviderExample = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Using custom test provider", {
+  yield* logger.info(aviationMessages.starting("custom test provider"), {
     service: "config-example",
     operation: "test-provider",
   })
@@ -125,7 +132,7 @@ export const testProviderExample = Effect.gen(function* () {
 export const errorHandlingExample = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Testing error handling", {
+  yield* logger.info(aviationMessages.starting("error handling"), {
     service: "config-example",
     operation: "error-handling",
   })
@@ -166,7 +173,7 @@ export const errorHandlingExample = Effect.gen(function* () {
 export const productionCheckExample = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Checking production configuration", {
+  yield* logger.info(aviationMessages.starting("production configuration"), {
     service: "config-example",
     operation: "production-check",
   })
@@ -211,7 +218,7 @@ export const productionCheckExample = Effect.gen(function* () {
 export const runAllExamples = Effect.gen(function* () {
   const logger = yield* Logger
 
-  yield* logger.takeoff("Running all configuration examples", {
+  yield* logger.info(aviationMessages.starting("all configuration examples"), {
     service: "config-example",
     operation: "run-all-examples",
   })
@@ -246,7 +253,7 @@ export const runAllExamples = Effect.gen(function* () {
   // Run production check example
   yield* productionCheckExample.pipe(Effect.provide(LoggerLayer))
 
-  yield* logger.landing("All examples completed!", {
+  yield* logger.success(aviationMessages.completing("all examples"), {
     service: "config-example",
     operation: "run-all-examples",
   })
@@ -255,4 +262,12 @@ export const runAllExamples = Effect.gen(function* () {
 // Export a simple function to run the examples
 export const runExamples = () => {
   return Effect.runPromise(runAllExamples.pipe(Effect.provide(LoggerLayer)))
+}
+
+// Run if this file is executed directly
+if (import.meta.main) {
+  runExamples().catch((error) => {
+    console.error("Config examples failed:", error)
+    process.exit(1)
+  })
 }

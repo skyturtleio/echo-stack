@@ -12,10 +12,25 @@ Extract the production-ready foundation from `hey-babe-triplit-extract-starter-k
 Just like the F/A-18E Super Hornet, Echo Stack is engineered for:
 
 - **Single-seat operation** - One developer can handle the entire stack
-- **Advanced avionics** - Effect.ts provides sophisticated "flight systems"
+- **Pragmatic tooling** - Right tool for the job, not ideology over shipping
 - **Multi-role capability** - Frontend, backend, database, auth, email, deployment
 - **Combat-ready** - Production-grade from day one
 - **Reliable systems** - Type safety, error handling, observability built-in
+
+### Technology Strategy
+
+**Effect.ts for Infrastructure:**
+
+- Configuration management and service composition
+- Database connection pooling and resource management
+- Logger service and observability
+- Server-side service orchestration
+
+**Ecosystem Standards for Application:**
+
+- API validation with Zod (ecosystem integration)
+- UI patterns with React ecosystem tools
+- Developer velocity with proven, well-documented libraries
 
 ## Current Foundation Assessment: EXCELLENT ⭐⭐⭐⭐⭐
 
@@ -29,12 +44,13 @@ Just like the F/A-18E Super Hornet, Echo Stack is engineered for:
 - **Complete Email Workflow** - Mailpit (dev) + Resend (production)
 - **TypeScript Strict Mode** - Comprehensive typing throughout
 
-### ✅ Key Effect.ts Integration Complete
+### ✅ Key Infrastructure Integration Complete
 
 1. **✅ Effect Logger Integration** - Replaced console.log with structured logging
 2. **✅ Production-Ready Observability** - JSON logs with metadata and correlation
-3. **✅ Aviation-Themed Operations** - takeoff, cruise, landing, clearskies for operations
+3. **✅ Aviation-Themed Messages** - Aviation messages in content, standard method names
 4. **✅ Traditional Error Handling** - Standard error/warning terminology maintained
+5. **✅ Pragmatic Architecture** - Effect.ts for infrastructure, ecosystem tools for application
 
 ## Extraction Matrix
 
@@ -89,7 +105,7 @@ Demo files specific to todo features
 - **Flight Computer**: ConfigService - Mission-critical configuration
 - **Navigation**: AuthService - Authentication and authorization
 - **Communications**: EmailService - Reliable message delivery
-- **Radar/Sensors**: LoggerService - Effect Logger with aviation operations + traditional errors
+- **Radar/Sensors**: LoggerService - Effect Logger with aviation-themed messages + standard methods
 - **Engine Management**: DatabaseService - Connection pooling
 
 ### Flight Control (TanStack Start)
@@ -118,7 +134,7 @@ Demo files specific to todo features
 - ✅ Auth: BetterAuth with JWT integration
 - ✅ Email: Development (Mailpit) + Production (Resend)
 - ✅ Config: Effect.ts type-safe environment management
-- ✅ Observability: Effect Logger + structured monitoring + aviation operations
+- ✅ Observability: Effect Logger + structured monitoring + aviation-themed messages
 
 **Advanced Flight Systems:**
 
@@ -144,36 +160,44 @@ Demo files specific to todo features
 2. **✅ Console Replacement** - Replaced 100+ console.log statements in database scripts
 3. **✅ Structured Observability** - JSON logging with correlation IDs and metadata
 4. **✅ Traditional Error Messaging** - Standard error/warning language for familiarity
+5. **✅ Documentation Updates** - Updated README.md to reflect current implementation
 
-### Phase 3: UI Component Library (30 minutes)
-
-1. **Base Components** - Button, Input, Card, Modal primitives
-2. **Auth Components** - Genericized sign-in/up forms
-3. **Layout Components** - Header, navigation, error boundaries
-4. **Loading States** - Consistent UX patterns
-
-### Phase 4: API Enhancement (30 minutes)
+### Phase 3: API Enhancement (30 minutes) - **CORE FUNCTIONALITY**
 
 1. **Validation Layer** - Zod schemas for API inputs
 2. **Rate Limiting** - Basic protection for auth endpoints
 3. **Error Handling** - Standardized API error responses
 4. **Health Monitoring** - Enhanced health check endpoints
 
-### Phase 5: Documentation (45 minutes)
+### Phase 4: Security & Production Readiness (30 minutes) - **CORE FUNCTIONALITY**
 
-1. **README.md** - "Pre-Flight Checklist" complete setup guide
+1. **Input Sanitization** - Protect against XSS and injection attacks
+2. **CORS Configuration** - Proper cross-origin resource sharing
+3. **Environment Validation** - Strict production environment checks
+4. **Error Boundaries** - Comprehensive client-side error handling
+
+### Phase 5: Documentation & Architecture (45 minutes) - **CORE FUNCTIONALITY**
+
+1. **✅ README.md** - "Pre-Flight Checklist" complete setup guide (COMPLETE)
 2. **ARCHITECTURE.md** - "Flight Systems Manual" Effect patterns explained
 3. **DEPLOYMENT.md** - "Combat Deployment Guide" production setup
 4. **Code Examples** - Common patterns and usage
 
-### Phase 6: Testing & Validation (15 minutes)
+### Phase 6: Testing & Validation (15 minutes) - **CORE FUNCTIONALITY**
 
 1. **Setup Scripts** - One-command initialization
 2. **Test Utilities** - Auth mocks, database helpers
 3. **Development Workflow** - Hot reload, database studio
 4. **Health Checks** - Verify all systems operational
 
-**Total Mission Time: ~3 hours for combat-ready Echo Stack**
+### Phase 7: UI Component Library (30 minutes) - **POLISH**
+
+1. **Base Components** - Button, Input, Card, Modal primitives
+2. **Auth Components** - Genericized sign-in/up forms
+3. **Layout Components** - Header, navigation, error boundaries
+4. **Loading States** - Consistent UX patterns
+
+**Total Mission Time: ~3.5 hours for combat-ready Echo Stack** (Core: ~2.5 hours, Polish: ~1 hour)
 
 ## Database Naming Convention (Phoenix-Style)
 
@@ -381,8 +405,8 @@ echo-stack-starter/
 
 ### 🎯 Echo Stack Differentiators
 
-- **Effect.ts First** - Professional service patterns and resource management
-- **Single-Seat Philosophy** - Optimized for solo developers
+- **Pragmatic Architecture** - Effect.ts for infrastructure, ecosystem tools for speed
+- **Single-Seat Philosophy** - Optimized for solo developers who ship fast
 - **Aviation-Inspired** - Clear, professional terminology and structure
 - **Production Grade** - Enterprise patterns in a startup-friendly package
 - **Full Observability** - Monitoring and logging built-in from day one

@@ -8,13 +8,13 @@
  */
 
 import { Effect, Console } from "effect"
-import { AppLayer } from "../../lib/app-services"
+import { AppLayer } from "../../src/lib/app-services"
 import {
   checkDatabaseHealth,
   withDatabase,
   executeQuery,
-} from "./database-service"
-import { ConfigService } from "../../lib/config-service"
+} from "../../src/server/db/database-service"
+import { ConfigService } from "../../src/lib/config-service"
 import { sql } from "drizzle-orm"
 
 const testDatabaseConnection = Effect.gen(function* () {

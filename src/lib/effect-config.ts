@@ -24,7 +24,6 @@ export {
   Environment,
   DatabaseConfig,
   AuthConfig,
-  TriliptConfig,
   EmailConfig,
   ServerConfig,
   loadConfig,

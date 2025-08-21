@@ -6,7 +6,7 @@
  */
 
 import { Effect } from "effect"
-import { AuthService } from "./auth-service"
+import { AuthService } from "../../src/lib/auth-service"
 
 // PROBLEM WITH CURRENT APPROACH (auth.server.ts):
 // ================================================

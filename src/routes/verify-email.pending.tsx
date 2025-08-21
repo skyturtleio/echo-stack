@@ -33,10 +33,10 @@ function VerifyEmailPage() {
       if (response.ok) {
         setResendMessage("✅ Verification email sent! Check your inbox.")
       } else {
-        const error = await response.text()
-        setResendMessage(`❌ Failed to send email: ${error}`)
+        const errorText = await response.text()
+        setResendMessage(`❌ Failed to send email: ${errorText}`)
       }
-    } catch (error) {
+    } catch {
       setResendMessage("❌ Something went wrong. Please try again.")
     } finally {
       setIsResending(false)

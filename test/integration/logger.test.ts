@@ -8,7 +8,11 @@
  */
 
 import { Effect } from "effect"
-import { Logger, LoggerLayer, aviationMessages } from "../lib/logger-service"
+import {
+  Logger,
+  LoggerLayer,
+  aviationMessages,
+} from "../../src/lib/logger-service"
 
 const testLogger = Effect.gen(function* () {
   const logger = yield* Logger

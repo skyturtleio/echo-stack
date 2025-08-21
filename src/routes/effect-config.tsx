@@ -23,10 +23,7 @@ const getConfigData = createServerFn().handler(async () => {
         url: config.auth.url,
         secretLength: Redacted.value(config.auth.secret).length,
       },
-      triplit: {
-        databaseUrl: config.triplit.databaseUrl,
-        corsOrigin: config.triplit.corsOrigin,
-      },
+
       email: {
         smtp: {
           host: config.email.smtp.host,
@@ -191,29 +188,6 @@ function EffectConfigComponent() {
                 <span className="text-green-600 font-medium">
                   {config.auth.secretLength} chars ✓
                 </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Triplit Config */}
-          <div className="bg-white shadow-sm rounded-lg p-4">
-            <h2 className="text-lg font-semibold mb-3">Triplit</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex flex-col space-y-1">
-                <span className="text-gray-600">Database Path:</span>
-                <span className="font-mono text-xs bg-gray-100 p-2 rounded break-all">
-                  {config.triplit.databaseUrl}
-                </span>
-              </div>
-              <div className="flex flex-col space-y-1">
-                <span className="text-gray-600">CORS Origin:</span>
-                <span className="font-mono text-xs bg-gray-100 p-2 rounded break-all">
-                  {config.triplit.corsOrigin}
-                </span>
-              </div>
-              <div className="flex justify-between pt-2 border-t">
-                <span className="text-gray-600">JWT Secret:</span>
-                <span className="text-gray-500 text-xs">&lt;redacted&gt;</span>
               </div>
             </div>
           </div>

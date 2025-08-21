@@ -7,7 +7,7 @@
  * Run with: `npx tsx src/config-demo.ts`
  */
 
-import { runExamples } from "./lib/example"
+import { runExamples } from "../test/integration/config.test"
 
 async function main() {
   console.log("🎯 Hey Babe - Effect Config Demo")

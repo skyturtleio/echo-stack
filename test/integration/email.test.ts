@@ -8,7 +8,7 @@
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
-} from "./lib/email.server"
+} from "../../src/lib/email.server"
 
 async function testEmailService() {
   console.log("📧 Testing Email Service with Mailpit...")

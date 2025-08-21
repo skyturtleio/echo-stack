@@ -6,8 +6,8 @@
  */
 
 import { Effect } from "effect"
-import { AuthService } from "./lib/auth-service"
-import { AppLayer } from "./lib/app-services"
+import { AuthService } from "../../src/lib/auth-service"
+import { AppLayer } from "../../src/lib/app-services"
 
 const testAuthConfiguration = Effect.gen(function* () {
   console.log("🔍 Testing Effect-based BetterAuth configuration...")
@@ -33,7 +33,7 @@ const testAuthConfiguration = Effect.gen(function* () {
 
   // Test 3: Test email service
   console.log("\n📧 Testing email service...")
-  yield* Effect.tryPromise(() => import("./lib/email.server"))
+  yield* Effect.tryPromise(() => import("../../src/lib/email.server"))
 
   console.log("✅ Email service imported successfully")
   console.log("   Mailpit should be running on localhost:1025 (SMTP)")

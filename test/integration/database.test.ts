@@ -8,8 +8,12 @@
  */
 
 import { Effect, ConfigProvider } from "effect"
-import { AutoDatabaseConfig } from "../../lib/database-naming"
-import { Logger, LoggerLayer, aviationMessages } from "../../lib/logger-service"
+import { AutoDatabaseConfig } from "../../src/lib/database-naming"
+import {
+  Logger,
+  LoggerLayer,
+  aviationMessages,
+} from "../../src/lib/logger-service"
 import postgres from "postgres"
 
 const testDatabaseConnection = Effect.gen(function* () {
