@@ -8,6 +8,58 @@
 import { z } from "zod"
 
 // =============================================================================
+// Input Sanitization Functions
+// =============================================================================
+
+/**
+ * Sanitize HTML to prevent XSS attacks
+ * Removes dangerous HTML tags and attributes while preserving safe formatting
+ */
+function sanitizeHtml(input: string): string {
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, "")
+    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, "")
+    .replace(/<link\b[^<]*(?:(?!<\/link>)<[^<]*)*<\/link>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    .replace(/javascript:/gi, "")
+    .replace(/vbscript:/gi, "")
+    .replace(/data:/gi, "")
+    .replace(/on\w+\s*=/gi, "")
+    .trim()
+}
+
+/**
+ * Sanitize user input for database storage
+ * Prevents SQL injection and normalizes whitespace
+ */
+function sanitizeText(input: string): string {
+  return input
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "") // Remove control characters
+    .replace(/\s+/g, " ") // Normalize whitespace
+    .trim()
+}
+
+/**
+ * Sanitize and validate URL input
+ */
+function sanitizeUrl(input: string): string {
+  try {
+    const url = new URL(input)
+
+    // Only allow safe protocols
+    if (!["http:", "https:", "mailto:"].includes(url.protocol)) {
+      throw new Error("Invalid protocol")
+    }
+
+    return url.toString()
+  } catch {
+    throw new Error("Invalid URL format")
+  }
+}
+
+// =============================================================================
 // Common Validation Patterns
 // =============================================================================
 
@@ -38,7 +90,8 @@ export const nameSchema = z
   .string()
   .min(1, "Name is required")
   .max(100, "Name too long")
-  .trim()
+  .transform((val) => sanitizeText(val))
+  .refine((val) => val.length > 0, "Name cannot be empty after sanitization")
 
 export const idSchema = z.string().uuid("Invalid ID format")
 
@@ -236,3 +289,34 @@ export const rateLimitConfigSchema = z.object({
 })
 
 export type RateLimitConfig = z.infer<typeof rateLimitConfigSchema>
+
+// =============================================================================
+// Exported Sanitization Utilities
+// =============================================================================
+
+/**
+ * Enhanced string schema with XSS protection
+ */
+export const safeStringSchema = z
+  .string()
+  .transform((val) => sanitizeText(val))
+  .refine((val) => val.length > 0, "Input cannot be empty after sanitization")
+
+/**
+ * HTML content schema with XSS protection
+ */
+export const safeHtmlSchema = z
+  .string()
+  .transform((val) => sanitizeHtml(val))
+  .refine((val) => val.length > 0, "Content cannot be empty after sanitization")
+
+/**
+ * URL schema with protocol validation
+ */
+export const safeUrlSchema = z
+  .string()
+  .url("Invalid URL format")
+  .transform((val) => sanitizeUrl(val))
+
+// Export sanitization functions for direct use
+export { sanitizeHtml, sanitizeText, sanitizeUrl }

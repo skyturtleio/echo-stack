@@ -5,8 +5,13 @@ import {
 } from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
+import { useEffect } from "react"
 
 import Header from "../components/Header"
+import {
+  CriticalErrorBoundary,
+  setupGlobalErrorHandlers,
+} from "../components/ErrorBoundary"
 
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools"
 
@@ -48,26 +53,33 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Setup global error handlers on mount
+    setupGlobalErrorHandlers()
+  }, [])
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        <Header />
-        {children}
-        <TanStackDevtools
-          config={{
-            position: "bottom-left",
-          }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-          ]}
-        />
+        <CriticalErrorBoundary>
+          <Header />
+          {children}
+          <TanStackDevtools
+            config={{
+              position: "bottom-left",
+            }}
+            plugins={[
+              {
+                name: "Tanstack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              TanStackQueryDevtools,
+            ]}
+          />
+        </CriticalErrorBoundary>
         <Scripts />
       </body>
     </html>

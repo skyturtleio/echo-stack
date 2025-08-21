@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useSession, signOut } from "~/lib/auth.client"
+import { PageErrorBoundary } from "~/components/ErrorBoundary"
 
 /**
  * Echo Stack Dashboard
@@ -9,7 +10,11 @@ import { useSession, signOut } from "~/lib/auth.client"
  */
 
 export const Route = createFileRoute("/dashboard")({
-  component: DashboardPage,
+  component: () => (
+    <PageErrorBoundary>
+      <DashboardPage />
+    </PageErrorBoundary>
+  ),
 })
 
 function DashboardPage() {

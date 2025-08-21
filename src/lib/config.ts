@@ -73,7 +73,7 @@ export const AppConfig = Config.all({
   email: EmailConfig,
 })
 
-export type AppConfig = Config.Config.Success<typeof AppConfig>
+export type AppConfigType = Config.Config.Success<typeof AppConfig>
 
 /**
  * Required Environment Variables by Environment
@@ -102,6 +102,7 @@ const REQUIRED_VARS = {
     "JWT_ISSUER",
     "RESEND_API_KEY",
     "RESEND_FROM_EMAIL",
+    "CORS_ALLOWED_ORIGINS",
   ],
   test: [
     "NODE_ENV",
@@ -236,6 +237,64 @@ export const loadConfig = Effect.gen(function* () {
     if (config.auth.url.includes("localhost")) {
       return yield* Effect.fail(
         new Error("Production BETTER_AUTH_URL cannot contain 'localhost'"),
+      )
+    }
+
+    // Validate server host is not localhost in production
+    if (
+      config.server.host.includes("localhost") ||
+      config.server.host === "127.0.0.1"
+    ) {
+      return yield* Effect.fail(
+        new Error("Production server HOST cannot be localhost or 127.0.0.1"),
+      )
+    }
+
+    // Validate database URL is not localhost in production
+    if (
+      config.database.url.includes("localhost") ||
+      config.database.url.includes("127.0.0.1")
+    ) {
+      return yield* Effect.fail(
+        new Error("Production DATABASE_URL cannot use localhost or 127.0.0.1"),
+      )
+    }
+
+    // Validate email from domain is not example.com
+    if (
+      config.email.resend.fromEmail.includes("example.com") ||
+      config.email.resend.fromEmail.includes("yourdomain.com")
+    ) {
+      return yield* Effect.fail(
+        new Error(
+          "Production RESEND_FROM_EMAIL must use a real domain (not example.com or yourdomain.com)",
+        ),
+      )
+    }
+
+    // Validate secrets are not development placeholders
+    const authSecret = Redacted.value(config.auth.secret)
+    const jwtSecret = Redacted.value(config.jwt.secret)
+
+    if (
+      authSecret.includes("change-this") ||
+      authSecret.includes("development") ||
+      authSecret.includes("test")
+    ) {
+      return yield* Effect.fail(
+        new Error(
+          "Production BETTER_AUTH_SECRET cannot contain placeholder text",
+        ),
+      )
+    }
+
+    if (
+      jwtSecret.includes("change-this") ||
+      jwtSecret.includes("development") ||
+      jwtSecret.includes("test")
+    ) {
+      return yield* Effect.fail(
+        new Error("Production JWT_SECRET cannot contain placeholder text"),
       )
     }
   }
