@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { useSession, signOut } from "~/lib/auth.client"
+import { PROJECT_CONFIG } from "~/lib/project-config"
 
 export default function Header() {
   const { data: session } = useSession()
@@ -21,7 +22,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link to="/" className="text-xl font-bold text-gray-900">
-              Echo Stack
+              {PROJECT_CONFIG.name}
             </Link>
           </div>
 

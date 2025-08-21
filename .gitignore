@@ -8,6 +8,9 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Echo Stack creation script (only needed in starter template)
+create-project.sh
 .nitro
 .tanstack
 .output

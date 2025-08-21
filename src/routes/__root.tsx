@@ -20,6 +20,8 @@ import appCss from "../styles.css?url"
 import type { QueryClient } from "@tanstack/react-query"
 import type { AuthContext } from "~/lib/auth-context"
 
+import { PROJECT_CONFIG } from "~/lib/project-config"
+
 interface MyRouterContext {
   queryClient: QueryClient
   auth?: AuthContext
@@ -37,7 +39,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Echo Stack - Single-Seat Full-Stack Starter",
+        title: `${PROJECT_CONFIG.name} - ${PROJECT_CONFIG.tagline}`,
       },
     ],
     links: [
