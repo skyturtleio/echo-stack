@@ -26,7 +26,7 @@ function VerifyEmailPage() {
       // Use BetterAuth's built-in sendVerificationEmail method
       const result = await authClient.sendVerificationEmail({
         email,
-        callbackURL: "/dashboard", // Redirect after verification
+        callbackURL: "/verify-success", // Redirect after verification
       })
 
       if (result.error) {

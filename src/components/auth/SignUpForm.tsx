@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { signUp } from "~/lib/auth.client"
+import { authClient } from "~/lib/auth.client"
 
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -16,7 +16,7 @@ export function SignUpForm() {
     const name = formData.get("name") as string
 
     try {
-      const result = await signUp.email({
+      const result = await authClient.signUp.email({
         email,
         password,
         name,
@@ -25,10 +25,32 @@ export function SignUpForm() {
       if (result.data) {
         console.log("✅ User created successfully:", result.data.user.email)
 
-        // BetterAuth automatically sends verification email since we have
-        // requireEmailVerification: true and sendVerificationEmail configured
-        // in auth-service.ts. Just redirect to verification page.
-        window.location.href = `/verify-email/pending?email=${encodeURIComponent(email)}&sent=true`
+        // Manually send verification email with proper callback URL
+        try {
+          const verificationResult = await authClient.sendVerificationEmail({
+            email,
+            callbackURL: "/verify-success", // Redirect to success page after verification
+          })
+
+          if (verificationResult.error) {
+            setError(
+              `Account created but verification email failed: ${verificationResult.error.message}`,
+            )
+            return
+          }
+
+          console.log("✅ Verification email sent successfully")
+          window.location.href = `/verify-email/pending?email=${encodeURIComponent(email)}&sent=true`
+        } catch (verificationError) {
+          console.error(
+            "❌ Failed to send verification email:",
+            verificationError,
+          )
+          setError(
+            "Account created but verification email failed to send. Please try the resend button.",
+          )
+          window.location.href = `/verify-email/pending?email=${encodeURIComponent(email)}&sent=false`
+        }
       } else if (result.error) {
         setError(result.error.message || "Sign up failed")
       }

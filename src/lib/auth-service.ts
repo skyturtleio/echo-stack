@@ -83,12 +83,12 @@ const createAuthInstance = Effect.gen(function* () {
     },
 
     emailVerification: {
-      sendOnSignUp: true,
+      sendOnSignUp: false, // We'll manually send with proper callback URL
       sendVerificationEmail: async ({
         user,
         url,
       }: {
-        user: any
+        user: { email: string; name?: string | null; id: string }
         url: string
       }) => {
         console.log(
@@ -97,9 +97,10 @@ const createAuthInstance = Effect.gen(function* () {
         )
         console.log("📧 Verification URL:", url)
         try {
+          const displayName = user.name || user.email.split("@")[0] || "User"
           await sendVerificationEmail({
             to: user.email,
-            name: user.name || user.email.split("@")[0],
+            name: displayName,
             verificationUrl: url,
           })
           console.log("✅ Verification email sent successfully to:", user.email)
