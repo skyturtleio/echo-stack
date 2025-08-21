@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
+import { authClient } from "~/lib/auth.client"
 
 export const Route = createFileRoute("/verify-email/pending")({
   validateSearch: z.object({
@@ -22,21 +23,19 @@ function VerifyEmailPage() {
     setResendMessage("")
 
     try {
-      const response = await fetch("/api/auth/send-verification-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
+      // Use BetterAuth's built-in sendVerificationEmail method
+      const result = await authClient.sendVerificationEmail({
+        email,
+        callbackURL: "/dashboard", // Redirect after verification
       })
 
-      if (response.ok) {
-        setResendMessage("✅ Verification email sent! Check your inbox.")
+      if (result.error) {
+        setResendMessage(`❌ Failed to send email: ${result.error.message}`)
       } else {
-        const errorText = await response.text()
-        setResendMessage(`❌ Failed to send email: ${errorText}`)
+        setResendMessage("✅ Verification email sent! Check your inbox.")
       }
-    } catch {
+    } catch (error) {
+      console.error("Resend verification error:", error)
       setResendMessage("❌ Something went wrong. Please try again.")
     } finally {
       setIsResending(false)

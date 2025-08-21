@@ -23,38 +23,12 @@ export function SignUpForm() {
       })
 
       if (result.data) {
-        // Successful sign up - now send verification email using production-like flow
-        try {
-          console.log("✅ User created successfully:", result.data.user.email)
+        console.log("✅ User created successfully:", result.data.user.email)
 
-          // Send verification email using our enhanced service
-          // This will generate a secure token, store it in database, and send email
-          const emailResponse = await fetch("/api/send-verification", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: email,
-              name: name,
-            }),
-          })
-
-          const emailResult = await emailResponse.json()
-
-          if (emailResponse.ok && emailResult.success) {
-            console.log("✅ Verification email sent successfully")
-            // Redirect to verification page
-            window.location.href = `/verify-email/pending?email=${encodeURIComponent(email)}&sent=true`
-          } else {
-            throw new Error(
-              emailResult.message || "Failed to send verification email",
-            )
-          }
-        } catch (emailError) {
-          console.error("❌ Email sending failed:", emailError)
-          setError(
-            "Account created but verification email failed to send. Please contact support.",
-          )
-        }
+        // BetterAuth automatically sends verification email since we have
+        // requireEmailVerification: true and sendVerificationEmail configured
+        // in auth-service.ts. Just redirect to verification page.
+        window.location.href = `/verify-email/pending?email=${encodeURIComponent(email)}&sent=true`
       } else if (result.error) {
         setError(result.error.message || "Sign up failed")
       }

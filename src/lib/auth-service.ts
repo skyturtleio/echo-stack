@@ -80,6 +80,10 @@ const createAuthInstance = Effect.gen(function* () {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
+    },
+
+    emailVerification: {
+      sendOnSignUp: true,
       sendVerificationEmail: async ({
         user,
         url,
