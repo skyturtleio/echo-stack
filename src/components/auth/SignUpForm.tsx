@@ -24,33 +24,12 @@ export function SignUpForm() {
 
       if (result.data) {
         console.log("✅ User created successfully:", result.data.user.email)
+        console.log(
+          "📧 Verification email will be sent automatically by BetterAuth",
+        )
 
-        // Manually send verification email with proper callback URL
-        try {
-          const verificationResult = await authClient.sendVerificationEmail({
-            email,
-            callbackURL: "/verify-success", // Redirect to success page after verification
-          })
-
-          if (verificationResult.error) {
-            setError(
-              `Account created but verification email failed: ${verificationResult.error.message}`,
-            )
-            return
-          }
-
-          console.log("✅ Verification email sent successfully")
-          window.location.href = `/verify-email/pending?email=${encodeURIComponent(email)}&sent=true`
-        } catch (verificationError) {
-          console.error(
-            "❌ Failed to send verification email:",
-            verificationError,
-          )
-          setError(
-            "Account created but verification email failed to send. Please try the resend button.",
-          )
-          window.location.href = `/verify-email/pending?email=${encodeURIComponent(email)}&sent=false`
-        }
+        // Redirect to verification pending page
+        window.location.href = `/verify-email/pending?email=${encodeURIComponent(email)}&sent=true`
       } else if (result.error) {
         setError(result.error.message || "Sign up failed")
       }

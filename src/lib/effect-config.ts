@@ -1,5 +1,5 @@
 /**
- * Effect Config for Hey Babe Couples Todo App
+ * Effect Config for Echo Stack Starter Kit
  *
  * This module provides type-safe configuration management using Effect.ts Config.
  * It supports development, production, and test environments with proper validation.

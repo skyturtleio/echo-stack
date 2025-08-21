@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
 /**
- * Database Seed Script - Phoenix-inspired
+ * Database Seed Script - Echo Stack
  *
- * This script populates the database with development data.
- * Run automatically by db:setup and db:reset, or manually with db:seed
+ * This script provides information about test data for development.
+ * BetterAuth users are created through the signup flow at /sign-up
  *
  * Usage: bun run db:seed
  */
@@ -13,7 +13,7 @@ import { Effect, ConfigProvider, Config } from "effect"
 import { AutoDatabaseConfig } from "~/lib/database-naming"
 import { Logger, LoggerLayer, aviationMessages } from "~/lib/logger-service"
 
-// Phoenix-style database config with auto-naming
+// Load configuration for seed script
 const loadDatabaseConfig = Effect.gen(function* () {
   const dbConfig = yield* AutoDatabaseConfig
   const environment = yield* Config.withDefault(
@@ -29,6 +29,25 @@ const loadDatabaseConfig = Effect.gen(function* () {
     environment,
   }
 })
+
+// Recommended test users for manual creation
+const recommendedTestUsers = [
+  {
+    name: "Alice Demo",
+    email: "alice@example.com",
+    password: "password123",
+  },
+  {
+    name: "Bob Demo",
+    email: "bob@example.com",
+    password: "password123",
+  },
+  {
+    name: "Charlie Demo",
+    email: "charlie@example.com",
+    password: "password123",
+  },
+]
 
 const seedDatabase = Effect.gen(function* () {
   const logger = yield* Logger
@@ -52,143 +71,89 @@ const seedDatabase = Effect.gen(function* () {
   )
 
   try {
-    yield* logger.info("Creating development users...", {
+    yield* logger.info("Echo Stack Authentication Setup", {
       service: "database-seed",
-      operation: "create-users",
+      operation: "auth-info",
     })
-    yield* createDevelopmentUsers()
 
-    yield* logger.info("Setting up demo couples...", {
+    yield* logger.info("Database tables ready for BetterAuth", {
       service: "database-seed",
-      operation: "create-couples",
+      operation: "auth-info",
+      metadata: {
+        tables: [
+          "user - User accounts",
+          "session - User sessions",
+          "account - OAuth accounts",
+          "verification - Email verification tokens",
+          "trustedToken - Password reset tokens",
+          "jwks - JWT signing keys",
+        ],
+      },
     })
-    yield* createDemoCouples()
 
-    yield* logger.info("Adding sample todos...", {
+    yield* logger.info("Authentication system features:", {
       service: "database-seed",
-      operation: "create-todos",
+      operation: "auth-info",
+      metadata: {
+        features: [
+          "Email/password authentication",
+          "Email verification flow",
+          "JWT token generation",
+          "Session management",
+          "Password reset (ready for implementation)",
+        ],
+      },
     })
-    yield* createSampleTodos()
-
-    yield* logger.info("Ensuring BetterAuth keys exist...", {
-      service: "database-seed",
-      operation: "ensure-auth-keys",
-    })
-    yield* logger.info(
-      "     ⚠️  JWT key check skipped (BetterAuth keys generated on first use)",
-    )
 
     yield* logger.success(aviationMessages.completing("Database seeding"), {
       service: "database-seed",
       operation: "completion",
     })
 
-    yield* logger.info("Development Data Summary:", {
+    // Provide test account information
+    yield* logger.info("Test Account Recommendations:", {
       service: "database-seed",
       metadata: {
-        users: "Demo users for testing",
-        couples: "Linked demo accounts",
-        todos: "Sample tasks across timeline views",
-        auth: "JWT keys for development",
+        note: "Create these accounts manually using /sign-up",
+        accounts: recommendedTestUsers.map(
+          (u) => `${u.name} (${u.email}) - password: ${u.password}`,
+        ),
+        signUpUrl: "/sign-up",
+        signInUrl: "/sign-in",
       },
     })
 
-    yield* logger.info("Test Accounts:", {
+    yield* logger.info("Development Testing Guide:", {
       service: "database-seed",
       metadata: {
-        accounts: [
-          "alice@example.com / password123",
-          "bob@example.com / password123",
-          "charlie@example.com / password123",
+        steps: [
+          "1. Visit /sign-up to create test accounts",
+          "2. Use recommended emails above with password 'password123'",
+          "3. Check Mailpit at localhost:8025 for verification emails",
+          "4. Complete email verification flow",
+          "5. Test sign-in/out functionality",
+          "6. Verify session management",
         ],
       },
     })
+
+    yield* logger.info("Email Development Setup:", {
+      service: "database-seed",
+      metadata: {
+        mailpit: "localhost:8025 - View all emails in development",
+        verification: "Email verification links work automatically",
+        production: "Switch to Resend in production with RESEND_API_KEY",
+      },
+    })
   } catch (error) {
+    yield* logger.error(`Seeding failed: ${error}`, {
+      service: "database-seed",
+      operation: "failure",
+      metadata: { error: String(error) },
+    })
     yield* Effect.fail(error)
   }
 })
-
-const createDevelopmentUsers = () =>
-  Effect.gen(function* () {
-    const logger = yield* Logger
-    const users = [
-      "alice@example.com",
-      "bob@example.com",
-      "charlie@example.com",
-    ]
-
-    yield* logger.info("Development users for testing:", {
-      service: "database-seed",
-      operation: "create-users",
-      metadata: {
-        users: users.map((email) => `${email} (password: password123)`),
-        signupUrl: "/sign-up",
-      },
-    })
-
-    yield* logger.info(
-      "Users can be created through the signup form at /sign-up",
-      {
-        service: "database-seed",
-        operation: "create-users",
-      },
-    )
-    yield* logger.info("Or use existing test users if already created", {
-      service: "database-seed",
-      operation: "create-users",
-    })
-  })
-
-const createDemoCouples = () =>
-  Effect.gen(function* () {
-    const logger = yield* Logger
-    yield* logger.info("Couples creation will be implemented with Phase 6", {
-      service: "database-seed",
-      operation: "create-couples",
-    })
-    yield* logger.info("For now, users can test individual todo management", {
-      service: "database-seed",
-      operation: "create-couples",
-    })
-  })
-
-const createSampleTodos = () =>
-  Effect.gen(function* () {
-    const logger = yield* Logger
-    yield* logger.info(
-      "Todo creation will be implemented with Triplit in Phase 4",
-      {
-        service: "database-seed",
-        operation: "create-todos",
-      },
-    )
-    yield* logger.info("For now, focus on authentication flows", {
-      service: "database-seed",
-      operation: "create-todos",
-    })
-  })
-
-// Commented out ensureBetterAuthKeys to prevent hanging
-// This function was causing the script to hang due to BetterAuth connection not closing
-// JWT keys are automatically generated by BetterAuth when needed
-
-// const ensureBetterAuthKeys = () =>
-//   Effect.gen(function* () {
-//     try {
-//       const jwks = yield* Effect.tryPromise(() => auth.api.getJwks()).pipe(
-//         Effect.timeout("5 seconds"),
-//         Effect.catchAll(() => Effect.succeed({ keys: [] }))
-//       )
-//
-//       if (jwks.keys.length > 0) {
-//         console.log(`     ✅ BetterAuth JWT keys exist (${jwks.keys.length} keys)`)
-//       } else {
-//         console.log("     ⚠️  No JWT keys found - they will be generated on first use")
-//       }
-//     } catch {
-//       console.log("     ⚠️  Could not check JWT keys - they will be generated on first use")
-//     }
-//   })
 
 // Main execution
 const program = seedDatabase.pipe(
@@ -208,7 +173,7 @@ const program = seedDatabase.pipe(
           steps: [
             "Ensure database is running and migrated",
             "Check DATABASE_URL in .env file",
-            "Try: bun run db:test",
+            "Try: bun run db:health",
             "Run: bun run db:setup (includes migration)",
           ],
         },

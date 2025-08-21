@@ -83,7 +83,9 @@ const createAuthInstance = Effect.gen(function* () {
     },
 
     emailVerification: {
-      sendOnSignUp: false, // We'll manually send with proper callback URL
+      sendOnSignUp: true, // Let BetterAuth handle automatic sending
+      callbackURL: "/verify-success", // Set the callback URL for verification
+      autoSignInAfterVerification: true, // Auto sign in after email verification
       sendVerificationEmail: async ({
         user,
         url,

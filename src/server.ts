@@ -27,7 +27,7 @@ setupGracefulShutdown({
 
 // Initialize services and validate startup
 const initializeServer = Effect.gen(function* () {
-  yield* Console.log("🚀 Starting Hey Babe server...")
+  yield* Console.log("🚀 Starting Echo Stack server...")
 
   // Validate configuration
   const configService = yield* ConfigService
@@ -52,7 +52,7 @@ const initializeServer = Effect.gen(function* () {
 })
 
 // Guard against dual initialization in development (Vite runs both SSR and client processes)
-const globalKey = "__HEY_BABE_SERVER_INITIALIZED"
+const globalKey = "__ECHO_STACK_SERVER_INITIALIZED"
 if (!(globalKey in globalThis)) {
   ;(globalThis as any)[globalKey] = true
 

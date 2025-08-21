@@ -9,7 +9,7 @@
  * Usage: bun run db:help
  */
 
-console.log("🗄️  Hey Babe Database Commands (Phoenix-inspired)")
+console.log("🗄️  Echo Stack Database Commands (Phoenix-inspired)")
 console.log("=".repeat(50))
 
 console.log("\n📦 Setup & Management:")

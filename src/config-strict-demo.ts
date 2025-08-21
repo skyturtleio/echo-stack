@@ -15,7 +15,7 @@ import {
 } from "./lib/config-provider"
 
 async function main() {
-  console.log("🎯 Hey Babe - Strict Config Demo")
+  console.log("🎯 Echo Stack - Strict Config Demo")
   console.log("=".repeat(50))
 
   console.log("\n📋 Testing strict configuration (no defaults)...")

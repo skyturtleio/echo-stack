@@ -3,14 +3,14 @@
 /**
  * Configuration Demo Script
  *
- * This script demonstrates the Effect Config setup for the Hey Babe project.
+ * This script demonstrates the Effect Config setup for the Echo Stack project.
  * Run with: `npx tsx src/config-demo.ts`
  */
 
 import { runExamples } from "../test/integration/config.test"
 
 async function main() {
-  console.log("🎯 Hey Babe - Effect Config Demo")
+  console.log("🎯 Echo Stack - Effect Config Demo")
   console.log("=".repeat(50))
 
   try {

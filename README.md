@@ -82,10 +82,10 @@ src/routes/
 ├── sign-in.tsx         # Authentication
 ├── sign-up.tsx         # User registration
 ├── health.tsx          # System health check
+├── verify-success.tsx  # Email verification success
 └── api/                # Server functions
-    ├── auth/           # Authentication endpoints
-    ├── send-verification.ts
-    └── verify-token.ts
+    ├── auth/           # BetterAuth endpoints
+    └── health.ts       # JSON health check API
 ```
 
 ### Adding Routes
@@ -197,22 +197,24 @@ DATABASE_URL=postgresql://user:password@localhost:5432/my_custom_db
 
 Built-in authentication with BetterAuth:
 
-- Email/password authentication
-- JWT token management
-- Email verification workflow
-- Session management
-- Secure password hashing
+- Email/password authentication with auto sign-in after verification
+- JWT token management with RS256 encryption
+- Automatic email verification workflow (Mailpit dev + Resend prod)
+- Session management with secure cookies
+- Secure password hashing with bcrypt
+- Rate limiting for auth endpoints
 
 ## Production Deployment 🚀
 
 Echo Stack is production-ready with:
 
-- Environment-based configuration
-- Structured JSON logging
-- Database connection pooling
-- Health check endpoints
-- Error monitoring
-- Type-safe API endpoints
+- Environment-based configuration with Effect.ts validation
+- Structured JSON logging with correlation IDs
+- Database connection pooling with automatic naming
+- Health check endpoints with service monitoring
+- Comprehensive error handling and API responses
+- Rate limiting and input validation
+- Type-safe API endpoints with Zod schemas
 
 ## Next Steps 📋
 

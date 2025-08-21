@@ -30,7 +30,7 @@ export const developmentProvider = defaultProvider.pipe(
         ["PORT", "3000"],
         [
           "DATABASE_URL",
-          "postgresql://user:password@localhost:5432/hey_babe_dev",
+          "postgresql://user:password@localhost:5432/echo_stack_starter_dev",
         ],
         ["BETTER_AUTH_SECRET", "development-secret-key-minimum-32-chars"],
         ["BETTER_AUTH_URL", "http://localhost:3000"],
@@ -61,7 +61,10 @@ export const testProvider = ConfigProvider.fromMap(
     ["NODE_ENV", "test"],
     ["HOST", "localhost"],
     ["PORT", "3001"],
-    ["DATABASE_URL", "postgresql://user:password@localhost:5432/hey_babe_test"],
+    [
+      "DATABASE_URL",
+      "postgresql://user:password@localhost:5432/echo_stack_starter_test",
+    ],
     ["BETTER_AUTH_SECRET", "test-secret-key-minimum-32-characters"],
     ["BETTER_AUTH_URL", "http://localhost:3001"],
     ["JWT_SECRET", "test-jwt-secret-minimum-32-characters-long"],
