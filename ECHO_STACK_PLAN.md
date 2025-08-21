@@ -143,7 +143,7 @@ Demo files specific to todo features
 - ⚡ Performance: Connection pooling, caching, optimizations
 - 🛡️ Security: Input validation, rate limiting, secure defaults
 - 📊 Monitoring: Health checks, error tracking, metrics
-- 🧪 Testing: Vitest with auth mocks and database helpers
+- 🧪 Testing: Hybrid approach - Integration tests for infrastructure, unit tests for logic
 
 ## Implementation Timeline
 
@@ -154,13 +154,14 @@ Demo files specific to todo features
 3. **TanStack Start** - Clean routing and server setup
 4. **Database Layer** - Schema and connection management
 
-### ✅ Phase 2: Effect Logger Integration (COMPLETE)
+### ✅ Phase 2: Infrastructure Integration & Testing (COMPLETE)
 
 1. **✅ Logger Service** - Effect Logger with aviation-themed operational logging
 2. **✅ Console Replacement** - Replaced 100+ console.log statements in database scripts
 3. **✅ Structured Observability** - JSON logging with correlation IDs and metadata
 4. **✅ Traditional Error Messaging** - Standard error/warning language for familiarity
 5. **✅ Documentation Updates** - Updated README.md to reflect current implementation
+6. **✅ Hybrid Testing Structure** - Reorganized tests for infrastructure validation and future unit tests
 
 ### Phase 3: API Enhancement (30 minutes) - **CORE FUNCTIONALITY**
 
@@ -183,12 +184,12 @@ Demo files specific to todo features
 3. **DEPLOYMENT.md** - "Combat Deployment Guide" production setup
 4. **Code Examples** - Common patterns and usage
 
-### Phase 6: Testing & Validation (15 minutes) - **CORE FUNCTIONALITY**
+### Phase 6: Advanced Testing & Validation (15 minutes) - **CORE FUNCTIONALITY**
 
-1. **Setup Scripts** - One-command initialization
-2. **Test Utilities** - Auth mocks, database helpers
+1. **Unit Test Foundation** - Traditional Vitest tests for Zod schemas and pure functions
+2. **Test Utilities** - Auth mocks, database helpers in test/helpers/
 3. **Development Workflow** - Hot reload, database studio
-4. **Health Checks** - Verify all systems operational
+4. **CI/CD Integration** - Automated testing pipeline setup
 
 ### Phase 7: UI Component Library (30 minutes) - **POLISH**
 
@@ -309,6 +310,81 @@ LOG_COLORS=true              # Colorized output
 LOG_TIMESTAMP=true           # Include timestamps
 ```
 
+## Hybrid Testing Strategy (Phase 2 Complete ✅)
+
+Echo Stack employs a pragmatic hybrid testing approach that balances infrastructure validation with traditional unit testing for optimal developer experience and operational confidence.
+
+### Integration Tests (Script-Based) - `test/integration/`
+
+**Purpose:** Validate real environment setup and service composition
+
+```bash
+# Infrastructure health checks
+bun run db:health              # Database connectivity
+bun run test:integration       # Core infrastructure tests
+bun run test:config            # Configuration validation
+bun run test:auth              # Authentication service
+bun run test:email             # Email service
+```
+
+**Advantages:**
+
+- Tests against actual environment (real DB, real config)
+- Validates Effect.ts service composition and dependency injection
+- Serves dual purpose as operational health checks
+- Catches configuration drift between environments
+- Tests resource management and cleanup
+
+**Files:**
+
+- `database.test.ts` - Database connectivity and health checks
+- `logger.test.ts` - Logger service integration with aviation messages
+- `config.test.ts` - Configuration loading and validation examples
+- `auth.test.ts` - Authentication service configuration
+- `email.test.ts` - Email service with Mailpit integration
+
+### Unit Tests (Traditional) - `test/unit/`
+
+**Purpose:** Fast feedback loop for business logic and pure functions
+
+```bash
+bun run test                   # Traditional unit tests (Vitest)
+```
+
+**Ideal for:**
+
+- Zod schema validation (fast, isolated)
+- Pure function testing (utils, helpers)
+- React component behavior testing
+- API endpoint logic (isolated from database)
+- Edge case testing and TDD workflows
+
+### Test Utilities - `test/helpers/`
+
+**Shared resources:**
+
+- Effect test providers and mock configurations
+- Database test utilities and fixtures
+- Authentication mocks and test users
+- Common test setup and teardown patterns
+
+### Testing Philosophy
+
+**"Right Tool for the Right Job":**
+
+| Test Type       | Use For                                 | Speed  | Environment |
+| --------------- | --------------------------------------- | ------ | ----------- |
+| **Integration** | Infrastructure, services, E2E workflows | Slower | Real        |
+| **Unit**        | Business logic, schemas, pure functions | Fast   | Mocked      |
+
+**Benefits of Hybrid Approach:**
+
+1. **Fast Development** - Unit tests provide immediate feedback
+2. **Environment Confidence** - Integration tests catch real-world issues
+3. **Operational Value** - Integration tests serve as health monitoring tools
+4. **TDD-Friendly** - Unit tests support rapid iteration cycles
+5. **Production Safety** - Integration tests validate actual service composition
+
 ## Migration Naming Convention
 
 Echo Stack uses descriptive migration names for better maintainability:
@@ -383,7 +459,10 @@ echo-stack-starter/
 │   │       ├── schema.ts          # Database schema
 │   │       └── migrations/        # Database migrations
 │   └── scripts/             # Development utilities
-├── test/                    # Test utilities and examples
+├── test/                    # Hybrid testing structure
+│   ├── integration/         # Infrastructure & service tests
+│   ├── unit/               # Traditional unit tests (Vitest)
+│   └── helpers/            # Test utilities and mocks
 ├── docs/                    # Documentation
 ├── public/                  # Static assets
 ├── README.md               # Pre-Flight Checklist
@@ -401,7 +480,7 @@ echo-stack-starter/
 3. **Production ready** - Auth, database, email, validation, monitoring
 4. **Single developer friendly** - Comprehensive docs, clear patterns
 5. **Type-safe throughout** - Strict TypeScript with Effect.ts services
-6. **Developer experience** - Hot reload, database tools, testing utilities
+6. **Developer experience** - Hot reload, database tools, hybrid testing approach
 
 ### 🎯 Echo Stack Differentiators
 
