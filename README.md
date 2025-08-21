@@ -173,25 +173,61 @@ bun run db:generate
 
 ### Database Naming
 
-Automatically generates database names based on your project:
+Echo Stack automatically generates database names based on your project, eliminating manual database naming and environment confusion:
 
 ```bash
-# Project: echo-stack-starter
+# Project: echo-stack-starter (from package.json)
 # Development: echo_stack_starter_dev
 # Test: echo_stack_starter_test
 # Production: echo_stack_starter
 ```
 
-### Configuration
+#### How It Works
+
+The database naming system works through these steps:
+
+1. **Project Discovery**: Reads your `package.json` file to get the project name
+2. **Name Normalization**: Converts hyphens to underscores and makes lowercase
+3. **Environment Suffix**: Adds environment-specific suffix based on `NODE_ENV`:
+   - `development` → `_dev`
+   - `test` → `_test`
+   - `production` → no suffix
+4. **Automatic URL Construction**: Effect.ts services automatically build the full database URL
+5. **Zero Configuration**: All database operations use the correct database without manual setup
+
+#### Benefits
+
+- **No Database Name Conflicts**: Each environment gets its own database
+- **Consistent Naming**: Follow Phoenix conventions across all projects
+- **Zero Manual Setup**: Database scripts automatically create the right databases
+- **Environment Safety**: Impossible to accidentally connect to wrong database
+- **Team Consistency**: Everyone gets the same database names automatically
+
+### Configuration Options
+
+**Option 1: Phoenix-style (Recommended) - Automatic Naming**
 
 ```env
-# Option 1: Phoenix-style (Recommended)
+# Base URL without database name - let Echo Stack handle the naming
 DATABASE_BASE_URL=postgresql://user:password@localhost:5432/
 NODE_ENV=development
 
-# Option 2: Legacy (Full URL)
-DATABASE_URL=postgresql://user:password@localhost:5432/my_custom_db
+# Result: Connects to echo_stack_starter_dev automatically
 ```
+
+**Option 2: Legacy - Manual Database Name**
+
+```env
+# Full URL with explicit database name
+DATABASE_URL=postgresql://user:password@localhost:5432/my_custom_db
+
+# Result: Uses exactly the database you specify
+```
+
+**When to use each:**
+
+- **Phoenix-style**: Perfect for new projects, teams, and consistent environments
+- **Legacy**: When migrating existing projects or need specific database names
 
 ## Authentication System 🔐
 
