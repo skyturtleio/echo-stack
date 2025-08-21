@@ -131,8 +131,8 @@ Demo files specific to todo features
 - ✅ Backend: TanStack Start server functions
 - ✅ Frontend: React with SSR/hydration
 - ✅ Database: PostgreSQL + Drizzle ORM
-- ✅ Auth: BetterAuth with JWT integration
-- ✅ Email: Development (Mailpit) + Production (Resend)
+- ✅ Auth: BetterAuth with JWT integration + email verification
+- ✅ Email: Development (Mailpit) + Production (Resend) with verification flow
 - ✅ Config: Effect.ts type-safe environment management
 - ✅ Observability: Effect Logger + structured monitoring + aviation-themed messages
 
@@ -162,6 +162,7 @@ Demo files specific to todo features
 4. **✅ Traditional Error Messaging** - Standard error/warning language for familiarity
 5. **✅ Documentation Updates** - Updated README.md to reflect current implementation
 6. **✅ Hybrid Testing Structure** - Reorganized tests for infrastructure validation and future unit tests
+7. **✅ Email Verification Flow** - BetterAuth integration with proper UX and type safety
 
 ### Phase 3: API Enhancement (30 minutes) - **CORE FUNCTIONALITY**
 
@@ -309,6 +310,80 @@ LOG_FORMAT=console           # console (dev) | json (prod)
 LOG_COLORS=true              # Colorized output
 LOG_TIMESTAMP=true           # Include timestamps
 ```
+
+## Email Verification System (Phase 2 Complete ✅)
+
+Echo Stack implements a production-ready email verification flow using BetterAuth's built-in system, enhanced with Effect.ts infrastructure for reliability.
+
+### Architecture Decision: BetterAuth Integration
+
+**✅ Chosen Approach**: Use BetterAuth's proven verification system with Effect.ts enhancements
+
+- **Security**: Battle-tested token generation and validation
+- **Reliability**: Handles edge cases, rate limiting, and security best practices
+- **Maintainability**: No custom crypto or token management code to maintain
+- **Effect Integration**: Email sending wrapped in Effect for retry logic and structured logging
+
+### Email Verification Flow
+
+```
+1. User signs up → Account created (emailVerified: false)
+2. Manual verification email sent via authClient.sendVerificationEmail()
+3. User clicks link → BetterAuth validates token → emailVerified: true
+4. User redirected to /verify-success → Auto-redirect to /dashboard
+5. Resend button → Same flow with proper callback URLs
+```
+
+### Implementation Details
+
+**Signup Flow** (`src/components/auth/SignUpForm.tsx`):
+
+- Uses `authClient.signUp.email()` to create account
+- Manually sends verification email with `callbackURL: "/verify-success"`
+- Provides proper error handling and user feedback
+
+**Resend Flow** (`src/routes/verify-email.pending.tsx`):
+
+- Uses `authClient.sendVerificationEmail()` with same callback URL
+- Consistent UX between initial and resend emails
+
+**Verification Success** (`src/routes/verify-success.tsx`):
+
+- Dedicated success page with clear messaging
+- Auto-redirect to dashboard after 3 seconds
+- Fallback manual navigation options
+
+### Type Safety & Effect Integration
+
+**Authentication Service** (`src/lib/auth-service.ts`):
+
+- Replaced `user: any` with proper TypeScript interface
+- Effect.ts service composition for config and database dependencies
+- Structured error handling and logging integration
+
+**Email Service** (`src/lib/email.server.ts`):
+
+- Effect Config for environment-specific email providers
+- Mailpit (development) + Resend (production) with automatic switching
+- Proper error handling and retry logic through Effect
+
+### Benefits of This Architecture
+
+1. **Security**: BetterAuth handles token generation, validation, and security
+2. **Reliability**: Effect.ts provides structured concurrency and error handling
+3. **Developer Experience**: Clear separation between auth logic and infrastructure
+4. **Type Safety**: Strict TypeScript throughout the verification flow
+5. **Observability**: Structured logging with correlation IDs and metadata
+6. **Maintainability**: Standard patterns, minimal custom code
+
+### Future Enhancement Opportunities
+
+For additional Effect.ts structured concurrency benefits:
+
+- Wrap verification email sending in Effect with retry logic
+- Add telemetry and metrics collection
+- Implement rate limiting with Effect Rate Limiter
+- Add distributed tracing for email delivery tracking
 
 ## Hybrid Testing Strategy (Phase 2 Complete ✅)
 
