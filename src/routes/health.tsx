@@ -5,6 +5,26 @@ import { AppLayer } from "../lib/app-services"
 import { ConfigService } from "../lib/config-service"
 import { checkDatabaseHealth } from "../server/db/database-service"
 
+interface DetailedDatabaseHealth {
+  healthy: boolean
+  message: string
+  latencyMs: number
+  connectionCount: number
+  timestamp: string
+}
+
+interface HealthStatus {
+  status: string
+  timestamp: string
+  environment: string
+  database: DetailedDatabaseHealth
+  server?: {
+    host: string
+    port: number
+  }
+  error?: string
+}
+
 /**
  * Enhanced Health Check Route with Real Database Monitoring
  *
@@ -62,7 +82,7 @@ export const Route = createFileRoute("/health")({
 })
 
 function HealthCheck() {
-  const health = Route.useLoaderData()
+  const health = Route.useLoaderData() as HealthStatus
 
   const isHealthy = health.status === "ok"
   const hasError = "error" in health
@@ -96,7 +116,7 @@ function HealthCheck() {
               </p>
               {!hasError && "server" in health && (
                 <p className="text-sm text-gray-600 mt-1">
-                  Server: {health.server.host}:{health.server.port}
+                  Server: {health.server?.host}:{health.server?.port}
                 </p>
               )}
             </div>
@@ -132,16 +152,11 @@ function HealthCheck() {
               </p>
               {health.database.healthy && hasDetailedDb && (
                 <div className="text-sm text-gray-600 mt-2 space-y-1">
-                  <p>• Query Latency: {(health.database as any).latencyMs}ms</p>
-                  <p>
-                    • Active Connections:{" "}
-                    {(health.database as any).connectionCount}
-                  </p>
+                  <p>• Query Latency: {health.database.latencyMs}ms</p>
+                  <p>• Active Connections: {health.database.connectionCount}</p>
                   <p>
                     • Last Check:{" "}
-                    {new Date(
-                      (health.database as any).timestamp,
-                    ).toLocaleString()}
+                    {new Date(health.database.timestamp).toLocaleString()}
                   </p>
                 </div>
               )}

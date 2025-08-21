@@ -35,10 +35,13 @@ function sanitizeHtml(input: string): string {
  * Prevents SQL injection and normalizes whitespace
  */
 function sanitizeText(input: string): string {
-  return input
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "") // Remove control characters
-    .replace(/\s+/g, " ") // Normalize whitespace
-    .trim()
+  return (
+    input
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u0008\u000b-\u000c\u000e-\u001f\u007f]/g, "") // Remove control characters
+      .replace(/\s+/g, " ") // Normalize whitespace
+      .trim()
+  )
 }
 
 /**
@@ -219,7 +222,7 @@ export function createValidator<T>(schema: z.ZodSchema<T>) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const message = error.issues
-          .map((err: any) => `${err.path.join(".")}: ${err.message}`)
+          .map((err) => `${err.path.join(".")}: ${err.message}`)
           .join(", ")
         throw new Error(`Validation failed: ${message}`)
       }
@@ -241,7 +244,7 @@ export function validateSafe<T>(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const message = error.issues
-        .map((err: any) => `${err.path.join(".")}: ${err.message}`)
+        .map((err) => `${err.path.join(".")}: ${err.message}`)
         .join(", ")
       return { success: false, error: `Validation failed: ${message}` }
     }

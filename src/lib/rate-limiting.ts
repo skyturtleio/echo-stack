@@ -182,7 +182,7 @@ export const extractIpAddress = (request: Request): string => {
 /**
  * Higher-order function to wrap TanStack Start server functions with rate limiting
  */
-export function withRateLimit<T extends (...args: any[]) => any>(
+export function withRateLimit<T extends (...args: unknown[]) => unknown>(
   rateLimiter: Effect.Effect<RateLimiter>,
   keyGenerator: (request: Request, ...args: Parameters<T>) => string,
 ) {

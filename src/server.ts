@@ -54,7 +54,7 @@ const initializeServer = Effect.gen(function* () {
 // Guard against dual initialization in development (Vite runs both SSR and client processes)
 const globalKey = "__ECHO_STACK_SERVER_INITIALIZED"
 if (!(globalKey in globalThis)) {
-  ;(globalThis as any)[globalKey] = true
+  ;(globalThis as Record<string, unknown>)[globalKey] = true
 
   // Run initialization with proper error handling
   try {

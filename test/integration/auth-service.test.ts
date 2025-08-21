@@ -36,6 +36,7 @@ export const auth = betterAuth({                     // ❌ Fixed at import
  */
 export const createMockAuthService = () =>
   AuthService.of({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     auth: {} as any, // Mock BetterAuth instance
     getSession: () =>
       Effect.succeed({
