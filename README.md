@@ -61,6 +61,7 @@ Echo Stack is built on production-grade technologies optimized for single-seat d
 - **Effect Logger** - Structured logging with aviation-themed messages
 - **Health Checks** - Database and service monitoring
 - **Error Handling** - Comprehensive error boundaries and reporting
+- **Security Systems** - Input sanitization, CORS protection, production validation
 
 ### Development Radar
 
@@ -258,9 +259,18 @@ Built-in authentication with BetterAuth:
 - Secure password hashing with bcrypt
 - Rate limiting for auth endpoints
 
-## Production Deployment 🚀
+## Security & Production 🚀
 
-Echo Stack is production-ready with:
+Echo Stack is production-ready with enterprise-grade security:
+
+### Security Features
+
+- **Input Sanitization** - XSS and injection attack prevention
+- **CORS Protection** - Environment-based cross-origin policies
+- **Error Boundaries** - Graceful failure handling without information leakage
+- **Production Validation** - Strict security requirements for deployment
+
+### Production Deployment
 
 - Environment-based configuration with Effect.ts validation
 - Structured JSON logging with correlation IDs
@@ -269,6 +279,18 @@ Echo Stack is production-ready with:
 - Comprehensive error handling and API responses
 - Rate limiting and input validation
 - Type-safe API endpoints with Zod schemas
+
+### Security Configuration
+
+```env
+# Production Security Requirements
+CORS_ALLOWED_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
+BETTER_AUTH_SECRET=32-character-minimum-cryptographic-secret
+BETTER_AUTH_URL=https://api.yourdomain.com  # HTTPS required
+RESEND_FROM_EMAIL=hello@yourdomain.com      # Real domain required
+```
+
+Echo Stack automatically validates all security requirements and will refuse to start with insecure production configurations.
 
 ## Next Steps 📋
 
