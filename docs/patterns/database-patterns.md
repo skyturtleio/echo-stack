@@ -786,7 +786,7 @@ export const TestDatabaseServiceLive = Layer.effect(
     // Use test database
     const testDbUrl =
       process.env.TEST_DATABASE_URL ||
-      "postgresql://test:test@localhost:5432/echo_stack_test"
+      "postgresql://test:test@localhost:5432/your_project_test"
 
     const pool = createPool({ connectionString: testDbUrl })
     const db = drizzle(pool, { schema })

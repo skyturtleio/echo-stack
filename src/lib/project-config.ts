@@ -15,7 +15,7 @@ export const PROJECT_CONFIG = {
   emoji: "✈️",
 
   // Meta information
-  author: "Echo Squadron",
+  author: "Your Name",
   version: "1.0.0",
 } as const
 

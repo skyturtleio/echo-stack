@@ -223,10 +223,10 @@ bun run db:generate
 Echo Stack automatically generates database names based on your project, eliminating manual database naming and environment confusion:
 
 ```bash
-# Project: echo-stack-starter (from package.json)
-# Development: echo_stack_starter_dev
-# Test: echo_stack_starter_test
-# Production: echo_stack_starter
+# Project: your-project-name (from package.json)
+# Development: your_project_name_dev
+# Test: your_project_name_test
+# Production: your_project_name
 ```
 
 #### How It Works
@@ -267,7 +267,7 @@ The database naming system uses **smart configuration detection** that automatic
 DATABASE_BASE_URL=postgresql://user:password@localhost:5432/
 NODE_ENV=development
 
-# Result: Connects to echo_stack_starter_dev automatically
+# Result: Connects to your_project_name_dev automatically
 ```
 
 **Option 2: Legacy - Manual Database Name**

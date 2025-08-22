@@ -553,7 +553,7 @@ export const FileServiceLive = Layer.scoped(
   FileService,
   Effect.gen(function* () {
     const tempDir = yield* Effect.acquireRelease(
-      Effect.sync(() => fs.mkdtempSync("/tmp/echo-stack-")),
+      Effect.sync(() => fs.mkdtempSync("/tmp/app-temp-")),
       (dir) => Effect.sync(() => fs.rmSync(dir, { recursive: true })),
     )
 

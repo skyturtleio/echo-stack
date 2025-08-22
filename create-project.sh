@@ -70,13 +70,65 @@ git commit -m "Initial commit from Echo Stack"
 # Remove the creation script from the new project
 rm -f create-project.sh
 
-print_success "Project '$PROJECT_NAME' created successfully!"
+# Update configuration files automatically
+print_status "Updating configuration files..."
+
+# Update package.json
+print_status "Updating package.json..."
+if command -v jq >/dev/null 2>&1; then
+    # Use jq if available for precise JSON editing
+    jq --arg name "$PROJECT_NAME" \
+       --arg desc "Full-stack application built with Echo Stack" \
+       '.name = $name | .description = $desc | .repository.url = "git+https://github.com/your-username/\($name).git"' \
+       package.json > package.json.tmp && mv package.json.tmp package.json
+else
+    # Fallback to sed for basic replacements
+    sed -i.bak "s/\"name\": \"echo-stack-starter\"/\"name\": \"$PROJECT_NAME\"/" package.json
+    sed -i.bak "s/Single-seat full-stack starter kit for the solo developer/Full-stack application built with Echo Stack/" package.json
+    sed -i.bak "s/your-username\/your-project-name.git/your-username\/$PROJECT_NAME.git/" package.json
+    rm -f package.json.bak
+fi
+
+# Update project-config.ts
+print_status "Updating project configuration..."
+PROJECT_TITLE=$(echo "$PROJECT_NAME" | sed 's/-/ /g' | sed 's/\b\w/\U&/g')  # Convert kebab-case to Title Case
+cat > src/lib/project-config.ts << EOF
+/**
+ * Project Configuration - Update these values for your project
+ *
+ * This file contains the main branding and configuration for your application.
+ * Update these values when starting a new project from Echo Stack.
+ */
+
+export const PROJECT_CONFIG = {
+  // Main project information
+  name: "$PROJECT_TITLE",
+  tagline: "Full-Stack Application",
+  description: "Modern full-stack application built with Echo Stack",
+
+  // Branding
+  emoji: "🚀",
+
+  // Meta information
+  author: "Your Name",
+  version: "1.0.0",
+} as const
+
+export type ProjectConfig = typeof PROJECT_CONFIG
+EOF
+
+# Update .env.example with project-specific values
+print_status "Updating .env.example..."
+sed -i.bak "s/your-project-name/$PROJECT_NAME/g" .env.example
+rm -f .env.example.bak
+
+print_success "Project '$PROJECT_NAME' created and configured successfully!"
 
 echo ""
 print_warning "NEXT STEPS:"
 echo "1. cd $PROJECT_NAME"
-echo "2. Edit src/lib/project-config.ts with your project details"
-echo "3. Edit package.json (name, description, author, repository)"
+echo "2. Review and edit src/lib/project-config.ts if needed"
+echo "3. Copy .env.example to .env and configure your environment"
 echo "4. bun install && bun run db:setup && bun run dev"
 
 echo ""
