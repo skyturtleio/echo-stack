@@ -1,10 +1,9 @@
 #!/usr/bin/env bun
 
 /**
- * Database Reset Script - Phoenix-inspired with Bun APIs and Effect
+ * Database Reset Script - Complete database reset with Bun APIs and Effect
  *
- * Equivalent to Phoenix's `mix ecto.reset`
- * This script:
+ * This script performs a complete database reset:
  * 1. Drops the entire database
  * 2. Recreates the database
  * 3. Runs all migrations
@@ -40,9 +39,7 @@ const loadDatabaseConfig = Effect.gen(function* () {
 })
 
 const resetDatabase = Effect.gen(function* () {
-  console.log(
-    "🔥 Resetting database (Echo Stack - Phoenix-inspired with Bun + Effect)...",
-  )
+  console.log("🔥 Resetting database (Echo Stack with Bun + Effect)...")
   console.log("⚠️  WARNING: This will destroy ALL data in the database!")
 
   // Load and validate configuration

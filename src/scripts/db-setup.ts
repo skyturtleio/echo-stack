@@ -1,10 +1,9 @@
 #!/usr/bin/env bun
 
 /**
- * Database Setup Script - Phoenix-inspired with Bun APIs and Effect
+ * Database Setup Script - Complete database setup with Bun APIs and Effect
  *
- * Equivalent to Phoenix's `mix ecto.setup`
- * This script:
+ * This script performs initial database setup:
  * 1. Creates the database if it doesn't exist
  * 2. Runs all pending migrations
  * 3. Seeds the database with development data
@@ -36,9 +35,7 @@ const loadDatabaseConfig = Effect.gen(function* () {
 })
 
 const setupDatabase = Effect.gen(function* () {
-  console.log(
-    "🚀 Setting up database (Echo Stack - Phoenix-inspired with Bun + Effect)...",
-  )
+  console.log("🚀 Setting up database (Echo Stack with Bun + Effect)...")
 
   // Load and validate configuration
   console.log("📋 Loading database configuration...")

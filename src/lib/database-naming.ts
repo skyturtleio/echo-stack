@@ -3,7 +3,7 @@ import { readFileSync } from "fs"
 import { join } from "path"
 
 /**
- * Phoenix-inspired Database Naming Convention
+ * Automatic Database Naming Convention
  *
  * Automatically generates database names based on:
  * - Project name from package.json
@@ -34,7 +34,7 @@ const getProjectName = (): string => {
 }
 
 /**
- * Generate database name following Phoenix conventions
+ * Generate database name following naming conventions
  */
 export const getDatabaseName = Effect.gen(function* () {
   const environment = yield* Config.withDefault(
@@ -44,7 +44,7 @@ export const getDatabaseName = Effect.gen(function* () {
 
   const projectName = getProjectName()
 
-  // Phoenix convention: append environment except for production
+  // Naming convention: append environment except for production
   switch (environment) {
     case "production":
       return projectName
@@ -132,12 +132,12 @@ export const validateDatabaseBaseUrl = (url: string): boolean => {
 
 /**
  * Enhanced database configuration with auto-naming
- * Supports both DATABASE_BASE_URL (Phoenix-style) and DATABASE_URL (legacy)
+ * Supports both DATABASE_BASE_URL (auto-naming) and DATABASE_URL (explicit)
  */
 export const AutoDatabaseConfig = Effect.gen(function* () {
-  // Try DATABASE_BASE_URL first (Phoenix-style), fall back to DATABASE_URL (legacy)
+  // Try DATABASE_BASE_URL first (auto-naming), fall back to DATABASE_URL (explicit)
   const databaseConfig = yield* Effect.orElse(
-    // Phoenix-style: use base URL + auto-generated name
+    // Auto-naming: use base URL + auto-generated name
     Effect.gen(function* () {
       const baseDatabaseUrl = yield* Config.string("DATABASE_BASE_URL").pipe(
         Config.validate({

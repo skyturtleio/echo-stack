@@ -1,15 +1,14 @@
 #!/usr/bin/env bun
 
 /**
- * Database Help Script - Phoenix-inspired
+ * Database Help Script
  *
  * Shows all available database commands and their usage
- * Equivalent to `mix help` in Phoenix
  *
  * Usage: bun run db:help
  */
 
-console.log("🗄️  Echo Stack Database Commands (Phoenix-inspired)")
+console.log("🗄️  Echo Stack Database Commands")
 console.log("=".repeat(50))
 
 console.log("\n📦 Setup & Management:")

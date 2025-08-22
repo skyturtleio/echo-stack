@@ -200,7 +200,7 @@ LOG_TIMESTAMP=true           # Include timestamps
 
 ## Database Operations 🗄️
 
-Echo Stack includes Phoenix-style database naming and automatic setup:
+Echo Stack includes automatic database naming and setup:
 
 ### Database Commands
 
@@ -260,7 +260,7 @@ The database naming system uses **smart configuration detection** that automatic
 
 ### Configuration Options
 
-**Option 1: Phoenix-style (Recommended) - Automatic Naming**
+**Option 1: Auto-Naming (Recommended) - Project-Based Naming**
 
 ```env
 # Base URL without database name - let Echo Stack handle the naming
@@ -283,13 +283,13 @@ DATABASE_URL=postgresql://user:password@localhost:5432/my_custom_db
 
 The system automatically detects which configuration style you're using:
 
-1. **Checks for DATABASE_BASE_URL first** → Uses Phoenix-style auto-naming
+1. **Checks for DATABASE_BASE_URL first** → Uses automatic project-based naming
 2. **Falls back to DATABASE_URL** → Uses Legacy-style explicit naming
 3. **Works with either style** → No configuration needed, just set your preferred option
 
 **When to use each:**
 
-- **Phoenix-style** (`DATABASE_BASE_URL`): Perfect for new projects, teams, and consistent environments
+- **Auto-naming** (`DATABASE_BASE_URL`): Perfect for new projects, teams, and consistent environments
 - **Legacy** (`DATABASE_URL`): When migrating existing projects or need specific database names
 
 **⚠️ Important**: Use only ONE option in your `.env` file - the system automatically detects which style you're using and configures accordingly.
