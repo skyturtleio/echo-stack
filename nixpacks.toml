@@ -1,0 +1,21 @@
+# Nixpacks configuration for Echo Stack
+# This file is optional - Nixpacks auto-detects most settings from package.json
+
+[phases.setup]
+# Use latest Bun runtime
+nixPkgs = ["bun"]
+
+[phases.build]
+# Install dependencies and build
+cmds = [
+  "bun install --frozen-lockfile",
+  "bun run build"
+]
+
+[start]
+# Start the application
+cmd = "bun run start"
+
+[variables]
+# Default port for Coolify
+PORT = "3000"
