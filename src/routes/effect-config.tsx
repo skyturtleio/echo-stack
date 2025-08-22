@@ -1,29 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
-import { Effect, Redacted } from "effect"
-import {
-  getDevelopmentProviderWithFallbacks,
-  isDevelopment,
-  loadConfig,
-} from "../lib/effect-config"
+import { Effect } from "effect"
+import { ConfigService } from "../lib/config-service"
+import { AppLayer } from "../lib/app-services"
 
 // Server function to load config - always runs server-side
 const getConfigData = createServerFn().handler(async () => {
-  // Use demo config validation that allows fallbacks for this demo page
+  // Use the new ConfigService with smart database detection
   const configProgram = Effect.gen(function* () {
-    const config = yield* loadConfig
-    const isDev = yield* isDevelopment
+    const configService = yield* ConfigService
+    const config = yield* configService.getConfig()
+    const isDev = yield* configService.isDevelopment()
 
     // Create safe config by extracting only non-sensitive values
     const safeConfig = {
       environment: config.environment,
       server: config.server,
-      database: { url: config.database.url.substring(0, 50) + "..." },
+      database: {
+        url: config.database.url.substring(0, 50) + "...",
+        type: config.database.type,
+        name: config.database.name,
+      },
       auth: {
         url: config.auth.url,
-        secretLength: Redacted.value(config.auth.secret).length,
+        secretLength: config.auth.secret.length,
       },
-
       email: {
         smtp: {
           host: config.email.smtp.host,
@@ -40,11 +41,8 @@ const getConfigData = createServerFn().handler(async () => {
   })
 
   try {
-    // Use development provider with fallbacks for demo purposes
-    const provider = getDevelopmentProviderWithFallbacks()
-    return await Effect.runPromise(
-      Effect.withConfigProvider(configProgram, provider),
-    )
+    // Use the AppLayer which provides the ConfigService with smart detection
+    return await Effect.runPromise(Effect.provide(configProgram, AppLayer))
   } catch (error) {
     return {
       error:
@@ -93,8 +91,8 @@ function EffectConfigComponent() {
               <li className="flex items-start">
                 <span className="mr-2">•</span>
                 <span>
-                  Verify DATABASE_URL format:
-                  postgresql://user:pass@host:port/dbname
+                  Set either DATABASE_BASE_URL (recommended) or DATABASE_URL.
+                  See .env.example for format examples.
                 </span>
               </li>
             </ul>
@@ -163,8 +161,28 @@ function EffectConfigComponent() {
           {/* Database Config */}
           <div className="bg-white shadow-sm rounded-lg p-4">
             <h2 className="text-lg font-semibold mb-3">Database</h2>
-            <div className="text-sm">
-              <div className="flex flex-col space-y-1">
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Detection Mode:</span>
+                <span
+                  className={`px-2 py-1 rounded text-xs font-medium ${
+                    config.database.type === "auto"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-blue-100 text-blue-800"
+                  }`}
+                >
+                  {config.database.type === "auto"
+                    ? "Smart Detection (DATABASE_BASE_URL)"
+                    : "Legacy (DATABASE_URL)"}
+                </span>
+              </div>
+              {config.database.name && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Database Name:</span>
+                  <span className="font-mono">{config.database.name}</span>
+                </div>
+              )}
+              <div className="flex flex-col space-y-1 pt-2 border-t">
                 <span className="text-gray-600">Database URL:</span>
                 <span className="font-mono text-xs bg-gray-100 p-2 rounded break-all">
                   {config.database.url}
