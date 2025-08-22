@@ -5,6 +5,6 @@ const config = {
   semi: false,
   singleQuote: false,
   trailingComma: "all",
-}
+};
 
-export default config
+export default config;

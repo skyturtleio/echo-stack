@@ -1,11 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { signOut, useSession } from "~/lib/auth.client"
 import { PROJECT_CONFIG } from "~/lib/project-config"
+import { Link, useNavigate } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/")({
   component: HomePage,
 })
 
 function HomePage() {
+  const { data: session } = useSession()
+  const navigate = useNavigate()
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate({ to: "/" })
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -37,22 +47,35 @@ function HomePage() {
             </div>
           </div>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-            <div className="rounded-md shadow">
-              <a
-                href="/sign-up"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
-              >
-                Get started
-              </a>
-            </div>
-            <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-              <a
-                href="/sign-in"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
-              >
-                Sign in
-              </a>
-            </div>
+            {session?.user ? (
+              <div className="rounded-md shadow">
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 md:py-4 md:text-lg md:px-10"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-md shadow">
+                  <Link
+                    to="/sign-up"
+                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
+                  >
+                    Get started
+                  </Link>
+                </div>
+                <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
+                  <Link
+                    to="/sign-in"
+                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
+                  >
+                    Sign in
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
