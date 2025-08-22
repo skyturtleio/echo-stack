@@ -9,8 +9,8 @@ dist-ssr
 .env.test.local
 .env.production.local
 
-# Echo Stack creation script (only needed in starter template)
-create-project.sh
+# Note: create-project.sh is intentionally included in the repo
+# It's needed for users to create new projects from Echo Stack
 .nitro
 .tanstack
 .output
