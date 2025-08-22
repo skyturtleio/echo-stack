@@ -1,9 +1,10 @@
 /**
- * Extract Public Key for Triplit Server using Effect Services
+ * Extract Public Key Information - Echo Stack
  *
- * This script extracts the public key from BetterAuth JWKS
- * for use in Triplit server configuration.
+ * This utility helps with JWT public key extraction for integrating
+ * with external services that need to validate Echo Stack JWTs.
  */
+import { getJWTIssuer } from "./lib/project-utils"
 
 import { Effect } from "effect"
 import { AuthService } from "./lib/auth-service"
@@ -39,7 +40,7 @@ const extractPublicKeyForTriplit = Effect.gen(function* () {
 
   console.log("\n🔧 Environment Variable Setup:")
   console.log("   JWT_SECRET='<your-jwt-secret-here>'")
-  console.log("   JWT_ISSUER='echo-stack-app'")
+  console.log(`   JWT_ISSUER='${getJWTIssuer()}'`)
 
   console.log("\n✨ Public Key Extraction Information Complete!")
   console.log("\n📝 Next Steps:")

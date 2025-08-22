@@ -8,6 +8,7 @@
 import { Effect, Context, Layer, Ref, Clock } from "effect"
 import { type RateLimitConfig } from "./validation"
 import { createApiRateLimitError } from "./errors"
+import { getServiceContext } from "./project-utils"
 
 // Rate limit entry for tracking requests
 interface RateLimitEntry {
@@ -24,7 +25,7 @@ export interface RateLimiter {
 
 // Rate limiter context
 export const RateLimiter = Context.GenericTag<RateLimiter>(
-  "@echo-stack/RateLimiter",
+  getServiceContext("RateLimiter"),
 )
 
 // Create in-memory rate limiter implementation

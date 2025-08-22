@@ -6,6 +6,7 @@ import { Effect, Layer, Context } from "effect"
 import { ConfigService } from "./config-service"
 import { DatabaseService } from "../server/db/database-service"
 import { sendVerificationEmail } from "./email.server"
+import { getJWTIssuer } from "./project-utils"
 
 /**
  * Enhanced Auth Service with Effect Integration
@@ -122,7 +123,7 @@ const createAuthInstance = Effect.gen(function* () {
           },
         },
         jwt: {
-          issuer: "echo-stack-app",
+          issuer: getJWTIssuer(),
         },
       }),
       reactStartCookies(),

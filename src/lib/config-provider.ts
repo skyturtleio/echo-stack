@@ -1,4 +1,9 @@
 import { ConfigProvider } from "effect"
+import {
+  getProjectDatabaseUrl,
+  getJWTIssuer,
+  getTestJWTIssuer,
+} from "./project-utils"
 
 /**
  * Configuration Providers for Different Environments
@@ -28,17 +33,14 @@ export const developmentProvider = defaultProvider.pipe(
         ["NODE_ENV", "development"],
         ["HOST", "localhost"],
         ["PORT", "3000"],
-        [
-          "DATABASE_URL",
-          "postgresql://user:password@localhost:5432/echo_stack_starter_dev",
-        ],
+        ["DATABASE_URL", getProjectDatabaseUrl("dev")],
         ["BETTER_AUTH_SECRET", "development-secret-key-minimum-32-chars"],
         ["BETTER_AUTH_URL", "http://localhost:3000"],
         [
           "JWT_SECRET",
           "development-jwt-secret-for-integrations-minimum-32-chars",
         ],
-        ["JWT_ISSUER", "echo-stack-app"],
+        ["JWT_ISSUER", getJWTIssuer()],
         // Nested SMTP configuration (SMTP.*)
         ["SMTP_HOST", "localhost"],
         ["SMTP_PORT", "1025"],
@@ -61,14 +63,11 @@ export const testProvider = ConfigProvider.fromMap(
     ["NODE_ENV", "test"],
     ["HOST", "localhost"],
     ["PORT", "3001"],
-    [
-      "DATABASE_URL",
-      "postgresql://user:password@localhost:5432/echo_stack_starter_test",
-    ],
+    ["DATABASE_URL", getProjectDatabaseUrl("test")],
     ["BETTER_AUTH_SECRET", "test-secret-key-minimum-32-characters"],
     ["BETTER_AUTH_URL", "http://localhost:3001"],
     ["JWT_SECRET", "test-jwt-secret-minimum-32-characters-long"],
-    ["JWT_ISSUER", "echo-stack-test"],
+    ["JWT_ISSUER", getTestJWTIssuer()],
     // Nested SMTP configuration
     ["SMTP.HOST", "localhost"],
     ["SMTP.PORT", "1025"],

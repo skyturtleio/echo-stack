@@ -13,6 +13,7 @@
  */
 
 import { Effect, Context, Layer, Config } from "effect"
+import { getServiceContext, getProjectName } from "./project-utils"
 import { ConfigProvider } from "effect"
 
 // Standard log levels with optional aviation-themed operational messages
@@ -43,7 +44,7 @@ export interface Logger {
 }
 
 // Logger context tag for dependency injection
-export const Logger = Context.GenericTag<Logger>("@echo-stack/Logger")
+export const Logger = Context.GenericTag<Logger>(getServiceContext("Logger"))
 
 // Console colors for development
 const colors = {
@@ -103,7 +104,7 @@ const LoggerLive = Layer.effect(
           timestamp,
           level,
           message,
-          service: context?.service || "echo-stack",
+          service: context?.service || getProjectName(),
           operation: context?.operation,
           userId: context?.userId,
           requestId: context?.requestId,

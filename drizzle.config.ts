@@ -1,6 +1,7 @@
 import { defineConfig } from "drizzle-kit"
 import { Effect, ConfigProvider, Config } from "effect"
 import { AutoDatabaseConfig } from "./src/lib/database-naming"
+import { getProjectDatabaseUrl } from "./src/lib/project-utils"
 
 /**
  * Drizzle Kit Configuration with Effect Config Integration
@@ -52,8 +53,7 @@ const getConfig = (): { databaseUrl: string; environment: string } => {
 
     // Fallback to development settings if config fails
     return {
-      databaseUrl:
-        "postgresql://user:password@localhost:5432/echo_stack_starter_dev",
+      databaseUrl: getProjectDatabaseUrl("dev"),
       environment: "development",
     }
   }
