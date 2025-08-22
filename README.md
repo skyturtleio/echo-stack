@@ -81,6 +81,9 @@ bun run db:reset         # Reset database (drop, create, migrate, seed)
 bun run db:setup         # Setup database (create, migrate, seed)
 bun run db:health        # Check database connection
 
+# Database Integration
+bun run extract:pem      # Extract PEM key for Triplit integration
+
 # Production
 bun run build            # Build for production
 bun run start            # Start production server
@@ -299,11 +302,37 @@ The system automatically detects which configuration style you're using:
 Built-in authentication with BetterAuth:
 
 - Email/password authentication with auto sign-in after verification
-- JWT token management with RS256 encryption
+- JWT token management with EdDSA/Ed25519 encryption
 - Automatic email verification workflow (Mailpit dev + Resend prod)
 - Session management with secure cookies
 - Secure password hashing with bcrypt
 - Rate limiting for auth endpoints
+
+### Database Sync Integration 🔄
+
+Echo Stack provides seamless JWT authentication for modern sync databases:
+
+**[Triplit Integration](docs/integrations/triplit.md)**
+
+- Local-first database with real-time sync
+- PEM key extraction: `bun run extract:pem`
+- Production-ready JWT verification
+
+**[Zero Integration](docs/integrations/zero.md)**
+
+- Offline-first sync database
+- Automatic JWKS URL support
+- Zero configuration required
+
+```bash
+# Extract PEM for Triplit
+bun run extract:pem https://your-app.com
+
+# Configure Zero with JWKS URL
+ZERO_AUTH_JWKS_URL=https://your-app.com/api/auth/jwks
+```
+
+See [Integration Guides](docs/integrations/) for complete setup instructions.
 
 ## Security & Production 🚀
 
