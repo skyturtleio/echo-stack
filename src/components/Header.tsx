@@ -1,20 +1,20 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { signOut, useSession } from "~/lib/auth.client";
-import { PROJECT_CONFIG } from "~/lib/project-config";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router"
+import { signOut, useSession } from "~/lib/auth.client"
+import { PROJECT_CONFIG } from "~/lib/project-config"
 
 export default function Header() {
-  const { data: session } = useSession();
-  const navigate = useNavigate();
-  const routerState = useRouterState();
-  const isAuthPage = routerState.location.pathname.includes("/sign-");
+  const { data: session } = useSession()
+  const navigate = useNavigate()
+  const routerState = useRouterState()
+  const isAuthPage = routerState.location.pathname.includes("/sign-")
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate({ to: "/sign-in" });
-  };
+    await signOut()
+    navigate({ to: "/sign-in" })
+  }
 
   if (isAuthPage) {
-    return null; // Don't show header on auth pages
+    return null // Don't show header on auth pages
   }
 
   return (
@@ -28,57 +28,55 @@ export default function Header() {
           </div>
 
           <nav className="flex items-center space-x-4">
-            {session?.user
-              ? (
-                <>
-                  <Link
-                    to="/dashboard"
-                    className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    to="/health"
-                    className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Health
-                  </Link>
-                  <Link
-                    to="/effect-config"
-                    className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Config
-                  </Link>
-                  <span className="text-gray-500 text-sm">
-                    {session.user.name}
-                  </span>
-                  <button
-                    onClick={handleSignOut}
-                    className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Sign out
-                  </button>
-                </>
-              )
-              : (
-                <>
-                  <Link
-                    to="/sign-in"
-                    className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Sign in
-                  </Link>
-                  <Link
-                    to="/sign-up"
-                    className="bg-indigo-600 text-white hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Sign up
-                  </Link>
-                </>
-              )}
+            {session?.user ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/health"
+                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Health
+                </Link>
+                <Link
+                  to="/effect-config"
+                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Config
+                </Link>
+                <span className="text-gray-500 text-sm">
+                  {session.user.name}
+                </span>
+                <button
+                  onClick={handleSignOut}
+                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/sign-in"
+                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  to="/sign-up"
+                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </div>
     </header>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { signOut, useSession } from "~/lib/auth.client";
-import { PageErrorBoundary } from "~/components/ErrorBoundary";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router"
+import { signOut, useSession } from "~/lib/auth.client"
+import { PageErrorBoundary } from "~/components/ErrorBoundary"
+import { Link, useNavigate } from "@tanstack/react-router"
 
 /**
  * Echo Stack Dashboard
@@ -16,16 +16,16 @@ export const Route = createFileRoute("/dashboard")({
       <DashboardPage />
     </PageErrorBoundary>
   ),
-});
+})
 
 function DashboardPage() {
-  const { data: session } = useSession();
-  const navigate = useNavigate();
+  const { data: session } = useSession()
+  const navigate = useNavigate()
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate({ to: "/sign-in" });
-  };
+    await signOut()
+    navigate({ to: "/sign-in" })
+  }
 
   if (!session?.user) {
     return (
@@ -45,7 +45,7 @@ function DashboardPage() {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -142,24 +142,24 @@ function DashboardPage() {
                 </p>
                 <div className="space-y-2 text-sm text-blue-600">
                   <p>
-                    • <strong>Effect.ts services</strong>{" "}
-                    - Configuration, Auth, Database, Email
+                    • <strong>Effect.ts services</strong> - Configuration, Auth,
+                    Database, Email
                   </p>
                   <p>
-                    • <strong>TanStack Start</strong>{" "}
-                    - Full-stack React with SSR
+                    • <strong>TanStack Start</strong> - Full-stack React with
+                    SSR
                   </p>
                   <p>
-                    • <strong>BetterAuth</strong>{" "}
-                    - Production-ready authentication
+                    • <strong>BetterAuth</strong> - Production-ready
+                    authentication
                   </p>
                   <p>
-                    • <strong>Drizzle ORM</strong>{" "}
-                    - Type-safe database operations
+                    • <strong>Drizzle ORM</strong> - Type-safe database
+                    operations
                   </p>
                   <p>
-                    • <strong>TypeScript strict mode</strong>{" "}
-                    - End-to-end type safety
+                    • <strong>TypeScript strict mode</strong> - End-to-end type
+                    safety
                   </p>
                 </div>
               </div>
@@ -177,5 +177,5 @@ function DashboardPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

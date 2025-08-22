@@ -30,7 +30,7 @@ async function getBaseUrl(): Promise<string> {
     })
 
     return await Effect.runPromise(configEffect.pipe(Effect.provide(AppLayer)))
-  } catch (error) {
+  } catch {
     console.warn(
       "⚠️  Could not load BETTER_AUTH_URL from config, using localhost",
     )
