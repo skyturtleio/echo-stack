@@ -46,6 +46,7 @@
     "db:seed": "bun run src/scripts/db-seed.ts",
     "db:help": "bun run src/scripts/db-help.ts",
     "config:validate": "bun run src/scripts/validate-config-consistency.ts",
+    "extract:pem": "bun run src/scripts/extract-pem-key.ts",
     "test:integration": "bun run test/integration/database.test.ts && bun run test/integration/logger.test.ts",
     "test:config": "bun run test/integration/config.test.ts",
     "test:auth": "bun run test/integration/auth.test.ts",
