@@ -9,7 +9,8 @@
  * Usage: bun run db:seed
  */
 
-import { Effect, ConfigProvider, Config } from "effect"
+import { Effect, Config } from "effect"
+import { defaultProvider } from "../lib/config-provider"
 import { AutoDatabaseConfig } from "~/lib/database-naming"
 import { Logger, LoggerLayer, aviationMessages } from "~/lib/logger-service"
 
@@ -158,7 +159,7 @@ const seedDatabase = Effect.gen(function* () {
 // Main execution
 const program = seedDatabase.pipe(
   Effect.provide(LoggerLayer),
-  Effect.withConfigProvider(ConfigProvider.fromEnv()),
+  Effect.withConfigProvider(defaultProvider),
   Effect.catchAll((error) =>
     Effect.gen(function* () {
       const logger = yield* Logger

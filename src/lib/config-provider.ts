@@ -22,11 +22,11 @@ export const defaultProvider = ConfigProvider.fromEnv({
 })
 
 /**
- * Development configuration provider with fallback values
- * ONLY used when .env file is missing - primarily for demos and testing
- * In normal development, developers should use their .env file
+ * Demo configuration provider with fallback values
+ * ONLY used for demos and special testing scenarios where .env is not available
+ * NOT used for normal development - use .env file instead
  */
-export const developmentProvider = defaultProvider.pipe(
+export const demoProvider = defaultProvider.pipe(
   ConfigProvider.orElse(() =>
     ConfigProvider.fromMap(
       new Map([
@@ -88,19 +88,26 @@ export const productionProvider = defaultProvider
 /**
  * Get the appropriate config provider based on NODE_ENV
  *
- * IMPORTANT: In strict mode, we primarily use defaultProvider (reads from .env)
- * The development/test providers are only fallbacks for demos and testing
+ * IMPORTANT: All environments now use strict configuration (fail fast)
+ * - Development/Production: Pure environment variables from .env - NO fallbacks
+ * - Test: Hardcoded test values
+ * - Demo: Use demoProvider only when explicitly requested via DEMO_MODE
  */
 export const getConfigProvider = () => {
   const env = process.env.NODE_ENV || "development"
+  const isDemoMode = process.env.DEMO_MODE === "true"
+
+  if (isDemoMode && env === "development") {
+    return demoProvider // Only for explicit demo scenarios
+  }
 
   switch (env) {
     case "production":
       return productionProvider // Pure environment variables - NO fallbacks
     case "test":
-      return testProvider
+      return testProvider // Test-specific hardcoded values
     case "development":
     default:
-      return defaultProvider // Prefer .env file over fallback values
+      return defaultProvider // Pure environment variables from .env - NO fallbacks
   }
 }

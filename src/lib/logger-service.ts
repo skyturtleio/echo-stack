@@ -14,7 +14,7 @@
 
 import { Effect, Context, Layer, Config } from "effect"
 import { getProjectName } from "./project-utils"
-import { ConfigProvider } from "effect"
+import { defaultProvider } from "./config-provider"
 
 // Standard log levels with optional aviation-themed operational messages
 export type LogLevel = "debug" | "info" | "warn" | "error" | "success"
@@ -182,7 +182,7 @@ const LoggerLive = Layer.effect(
 
 // Provide logger with environment configuration
 export const LoggerLayer = LoggerLive.pipe(
-  Layer.provide(Layer.setConfigProvider(ConfigProvider.fromEnv())),
+  Layer.provide(Layer.setConfigProvider(defaultProvider)),
 )
 
 // Convenience function for quick logging without context

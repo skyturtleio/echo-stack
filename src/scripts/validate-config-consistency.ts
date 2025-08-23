@@ -8,6 +8,7 @@
  */
 
 import { Effect, Config, ConfigProvider } from "effect"
+import { defaultProvider } from "../lib/config-provider"
 import { Logger, LoggerLayer, aviationMessages } from "../lib/logger-service"
 
 const validateConfigConsistency = Effect.gen(function* () {
@@ -35,7 +36,7 @@ const validateConfigConsistency = Effect.gen(function* () {
   const drizzleConfigMethod = Effect.gen(function* () {
     const databaseUrl = yield* ValidatedDatabaseConfig
     return databaseUrl
-  }).pipe(Effect.withConfigProvider(ConfigProvider.fromEnv()))
+  }).pipe(Effect.withConfigProvider(defaultProvider))
 
   const databaseUrl = yield* drizzleConfigMethod
 

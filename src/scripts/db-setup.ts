@@ -13,7 +13,8 @@
  * Usage: bun run db:setup
  */
 
-import { ConfigProvider, Effect, Config } from "effect"
+import { Effect, Config } from "effect"
+import { defaultProvider } from "../lib/config-provider"
 import { AutoDatabaseConfig } from "~/lib/database-naming"
 import { psqlCommand, drizzleCommand, execWithTimeout } from "./utils/bun-exec"
 
@@ -133,7 +134,7 @@ const seedDatabase = () =>
 
 // Main execution
 const program = setupDatabase.pipe(
-  Effect.withConfigProvider(ConfigProvider.fromEnv()),
+  Effect.withConfigProvider(defaultProvider),
   Effect.catchAll((error) =>
     Effect.gen(function* () {
       console.error(`\n❌ Setup failed: ${error}`)

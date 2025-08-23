@@ -9,7 +9,7 @@
 
 import { Effect } from "effect"
 import { ConfigService, ConfigServiceLayer } from "../lib/config-service"
-import { defaultProvider, developmentProvider } from "../lib/config-provider"
+import { defaultProvider, demoProvider } from "../lib/config-provider"
 
 /**
  * Validate configuration and provide detailed startup-style logging
@@ -89,18 +89,18 @@ async function main() {
     }
   }
 
-  // Test 2: Development provider with fallbacks
-  console.log("\n2️⃣  Testing development provider (with fallbacks)")
+  // Test 2: Demo provider with fallbacks
+  console.log("\n2️⃣  Testing demo provider (with fallbacks)")
   try {
     await Effect.runPromise(
       validateConfigWithLogging.pipe(
         Effect.provide(ConfigServiceLayer),
-        Effect.withConfigProvider(developmentProvider),
+        Effect.withConfigProvider(demoProvider),
       ),
     )
-    console.log("✅ Fallback config validation passed!")
+    console.log("✅ Demo config validation passed!")
   } catch (error) {
-    console.log("❌ Fallback config validation failed:")
+    console.log("❌ Demo config validation failed:")
     if (error instanceof Error) {
       console.log(error.message)
     }
