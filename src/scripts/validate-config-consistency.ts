@@ -7,8 +7,7 @@
  * are using the same validation logic and producing consistent results.
  */
 
-import { Effect, ConfigProvider } from "effect"
-import { ValidatedDatabaseConfig } from "../lib/config-validation"
+import { Effect, Config, ConfigProvider } from "effect"
 import { Logger, LoggerLayer, aviationMessages } from "../lib/logger-service"
 
 const validateConfigConsistency = Effect.gen(function* () {
@@ -24,7 +23,15 @@ const validateConfigConsistency = Effect.gen(function* () {
     },
   )
 
-  // Test 1: Load config using the same method as Drizzle config
+  // Test 1: Load config using basic database URL validation
+  const ValidatedDatabaseConfig = Config.string("DATABASE_URL").pipe(
+    Config.validate({
+      message: "DATABASE_URL must be a valid PostgreSQL connection string",
+      validation: (url: string) =>
+        url.startsWith("postgresql://") || url.startsWith("postgres://"),
+    }),
+  )
+
   const drizzleConfigMethod = Effect.gen(function* () {
     const databaseUrl = yield* ValidatedDatabaseConfig
     return databaseUrl

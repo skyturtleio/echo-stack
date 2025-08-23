@@ -8,11 +8,63 @@
  */
 
 import { Effect } from "effect"
-import { validateStartupConfig } from "../lib/config-startup"
+import { getConfig, ConfigServiceLayer } from "../lib/config-service"
 import {
   getStrictProvider,
   getDevelopmentProviderWithFallbacks,
 } from "../lib/config-provider"
+
+/**
+ * Validate configuration and provide detailed startup-style logging
+ */
+const validateConfigWithLogging = Effect.gen(function* () {
+  console.log("🔧 Validating application configuration...")
+
+  try {
+    // Load and validate full configuration
+    const config = yield* getConfig()
+    console.log("✅ Configuration validation passed")
+
+    // Log successful startup config (without secrets)
+    console.log(
+      `✅ Configuration loaded successfully for ${config.environment} environment`,
+    )
+    console.log(`   Server: ${config.server.host}:${config.server.port}`)
+    console.log(`   Database: ${config.database.url.substring(0, 30)}...`)
+    console.log(`   Auth URL: ${config.auth.url}`)
+
+    if (config.environment === "development") {
+      console.log(
+        `   Email: SMTP (${config.email.smtp.host}:${config.email.smtp.port})`,
+      )
+    } else if (config.environment === "production") {
+      console.log(`   Email: Resend (${config.email.resend.fromEmail})`)
+    }
+
+    return config
+  } catch (error) {
+    console.error("\n💥 Configuration validation failed!")
+    console.error(
+      "   The application cannot start with invalid configuration.\n",
+    )
+
+    if (error instanceof Error) {
+      console.error(error.message)
+    } else {
+      console.error("Unknown configuration error:", error)
+    }
+
+    console.error("\n🔧 Quick fix:")
+    console.error("   1. Ensure .env file exists (copy from .env.example)")
+    console.error("   2. Fill in all required environment variables")
+    console.error("   3. Restart the application")
+    console.error(
+      "   4. Run 'bun run src/scripts/config-demo.ts' to test configuration\n",
+    )
+
+    return yield* Effect.fail(error)
+  }
+})
 
 async function main() {
   console.log("🎯 Echo Stack - Strict Config Demo")
@@ -23,13 +75,12 @@ async function main() {
   // Test 1: Strict provider (reads from .env only)
   console.log("\n1️⃣  Testing strict provider (.env file required)")
   try {
-    const strictConfigProgram = Effect.gen(function* () {
-      return yield* validateStartupConfig
-    })
-
     const strictProvider = getStrictProvider()
     await Effect.runPromise(
-      Effect.withConfigProvider(strictConfigProgram, strictProvider),
+      validateConfigWithLogging.pipe(
+        Effect.provide(ConfigServiceLayer),
+        Effect.withConfigProvider(strictProvider),
+      ),
     )
     console.log("✅ Strict config validation passed!")
   } catch (error) {
@@ -44,13 +95,12 @@ async function main() {
   // Test 2: Development provider with fallbacks
   console.log("\n2️⃣  Testing development provider (with fallbacks)")
   try {
-    const fallbackConfigProgram = Effect.gen(function* () {
-      return yield* validateStartupConfig
-    })
-
     const fallbackProvider = getDevelopmentProviderWithFallbacks()
     await Effect.runPromise(
-      Effect.withConfigProvider(fallbackConfigProgram, fallbackProvider),
+      validateConfigWithLogging.pipe(
+        Effect.provide(ConfigServiceLayer),
+        Effect.withConfigProvider(fallbackProvider),
+      ),
     )
     console.log("✅ Fallback config validation passed!")
   } catch (error) {
