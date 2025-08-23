@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 import { sql } from "drizzle-orm"
 import { Effect, Layer, Context } from "effect"
-import { getDatabaseConfig } from "../../lib/config-service"
+import { ConfigService } from "../../lib/config-service"
 import * as schema from "./schema"
 
 /**
@@ -27,7 +27,8 @@ export const DatabaseService = Context.GenericTag<DatabaseService>(
  */
 const createDatabaseConnection = Effect.gen(function* () {
   // Get validated database URL from Config Service
-  const databaseConfig = yield* getDatabaseConfig()
+  const configService = yield* ConfigService
+  const databaseConfig = yield* configService.getDatabaseConfig()
   const databaseUrl = databaseConfig.url
 
   // Create postgres connection

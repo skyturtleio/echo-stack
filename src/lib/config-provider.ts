@@ -104,36 +104,3 @@ export const getConfigProvider = () => {
       return defaultProvider // Prefer .env file over fallback values
   }
 }
-
-/**
- * Get development provider with fallbacks (for demos only)
- */
-export const getDevelopmentProviderWithFallbacks = () => developmentProvider
-
-/**
- * Get strict provider (environment variables only, no fallbacks)
- */
-export const getStrictProvider = () => defaultProvider
-
-/**
- * Create a custom config provider from a Map for testing
- */
-export const createTestProvider = (overrides: Map<string, string>) =>
-  ConfigProvider.fromMap(overrides).pipe(
-    ConfigProvider.orElse(() => testProvider),
-  )
-
-/**
- * Utility to create a config provider with constant case conversion
- * Useful when environment variables use UPPER_CASE convention
- */
-export const constantCaseProvider = defaultProvider.pipe(
-  ConfigProvider.constantCase,
-)
-
-/**
- * Utility to create a nested config provider
- * Useful for grouping related configuration under a namespace
- */
-export const createNestedProvider = (namespace: string) =>
-  defaultProvider.pipe(ConfigProvider.nested(namespace))

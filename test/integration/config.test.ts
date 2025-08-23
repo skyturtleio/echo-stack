@@ -1,10 +1,6 @@
-import { Effect } from "effect"
+import { Effect, ConfigProvider } from "effect"
 import { ConfigService, ConfigServiceLayer } from "../../src/lib/config-service"
-import {
-  testProvider,
-  createTestProvider,
-  defaultProvider,
-} from "../../src/lib/config-provider"
+import { testProvider, defaultProvider } from "../../src/lib/config-provider"
 import {
   Logger,
   LoggerLayer,
@@ -194,7 +190,7 @@ export const productionCheckExample = Effect.gen(function* () {
   return config
 }).pipe(
   Effect.withConfigProvider(
-    createTestProvider(
+    ConfigProvider.fromMap(
       new Map([
         ["NODE_ENV", "production"],
         ["HOST", "app.example.com"],
@@ -210,7 +206,7 @@ export const productionCheckExample = Effect.gen(function* () {
         ["RESEND_API_KEY", "re_123456789"],
         ["RESEND_FROM_EMAIL", "hello@example.com"],
       ]),
-    ),
+    ).pipe(ConfigProvider.orElse(() => testProvider)),
   ),
 )
 

@@ -8,11 +8,8 @@
  */
 
 import { Effect } from "effect"
-import { getConfig, ConfigServiceLayer } from "../lib/config-service"
-import {
-  getStrictProvider,
-  getDevelopmentProviderWithFallbacks,
-} from "../lib/config-provider"
+import { ConfigService, ConfigServiceLayer } from "../lib/config-service"
+import { defaultProvider, developmentProvider } from "../lib/config-provider"
 
 /**
  * Validate configuration and provide detailed startup-style logging
@@ -22,7 +19,8 @@ const validateConfigWithLogging = Effect.gen(function* () {
 
   try {
     // Load and validate full configuration
-    const config = yield* getConfig()
+    const configService = yield* ConfigService
+    const config = yield* configService.getConfig()
     console.log("✅ Configuration validation passed")
 
     // Log successful startup config (without secrets)
@@ -75,11 +73,10 @@ async function main() {
   // Test 1: Strict provider (reads from .env only)
   console.log("\n1️⃣  Testing strict provider (.env file required)")
   try {
-    const strictProvider = getStrictProvider()
     await Effect.runPromise(
       validateConfigWithLogging.pipe(
         Effect.provide(ConfigServiceLayer),
-        Effect.withConfigProvider(strictProvider),
+        Effect.withConfigProvider(defaultProvider),
       ),
     )
     console.log("✅ Strict config validation passed!")
@@ -95,11 +92,10 @@ async function main() {
   // Test 2: Development provider with fallbacks
   console.log("\n2️⃣  Testing development provider (with fallbacks)")
   try {
-    const fallbackProvider = getDevelopmentProviderWithFallbacks()
     await Effect.runPromise(
       validateConfigWithLogging.pipe(
         Effect.provide(ConfigServiceLayer),
-        Effect.withConfigProvider(fallbackProvider),
+        Effect.withConfigProvider(developmentProvider),
       ),
     )
     console.log("✅ Fallback config validation passed!")

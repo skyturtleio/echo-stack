@@ -33,18 +33,3 @@ export const AppLayer = Layer.mergeAll(
     ),
   ),
 )
-
-/**
- * Development layer with additional development-specific services
- */
-export const DevAppLayer = AppLayer
-
-/**
- * Production layer with production-optimized configuration
- */
-export const ProdAppLayer = AppLayer
-
-/**
- * Test layer with test-specific services and mocks
- */
-export const TestAppLayer = AppLayer
