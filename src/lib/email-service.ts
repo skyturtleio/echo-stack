@@ -307,3 +307,44 @@ function createPasswordResetEmailHtml(name: string, resetUrl: string): string {
     </div>
   `
 }
+
+/**
+ * Promise-based adapters for external libraries (like BetterAuth)
+ * These run the Effect programs with the full service layer
+ */
+
+export const sendVerificationEmailPromise = async (data: {
+  to: string
+  name: string
+  verificationUrl: string
+}): Promise<void> => {
+  const { ConfigServiceLayer } = await import("./config-service")
+  const { LoggerLayer } = await import("./logger-service")
+
+  const program = sendVerificationEmail(data)().pipe(
+    Effect.provide(
+      EmailServiceLayer.pipe(
+        Layer.provide(Layer.mergeAll(ConfigServiceLayer, LoggerLayer)),
+      ),
+    ),
+  )
+  await Effect.runPromise(program)
+}
+
+export const sendPasswordResetEmailPromise = async (data: {
+  to: string
+  name: string
+  resetUrl: string
+}): Promise<void> => {
+  const { ConfigServiceLayer } = await import("./config-service")
+  const { LoggerLayer } = await import("./logger-service")
+
+  const program = sendPasswordResetEmail(data)().pipe(
+    Effect.provide(
+      EmailServiceLayer.pipe(
+        Layer.provide(Layer.mergeAll(ConfigServiceLayer, LoggerLayer)),
+      ),
+    ),
+  )
+  await Effect.runPromise(program)
+}

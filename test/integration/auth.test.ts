@@ -33,7 +33,7 @@ const testAuthConfiguration = Effect.gen(function* () {
 
   // Test 3: Test email service
   console.log("\n📧 Testing email service...")
-  yield* Effect.tryPromise(() => import("../../src/lib/email.server"))
+  yield* Effect.tryPromise(() => import("../../src/lib/email-service"))
 
   console.log("✅ Email service imported successfully")
   console.log("   Mailpit should be running on localhost:1025 (SMTP)")

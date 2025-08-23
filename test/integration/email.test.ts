@@ -6,9 +6,9 @@
  */
 
 import {
-  sendVerificationEmail,
-  sendPasswordResetEmail,
-} from "../../src/lib/email.server"
+  sendVerificationEmailPromise,
+  sendPasswordResetEmailPromise,
+} from "../../src/lib/email-service"
 
 async function testEmailService() {
   console.log("📧 Testing Email Service with Mailpit...")
@@ -18,7 +18,7 @@ async function testEmailService() {
   try {
     // Test 1: Send verification email
     console.log("\n📨 Sending test verification email...")
-    await sendVerificationEmail({
+    await sendVerificationEmailPromise({
       to: "test@example.com",
       name: "Test User",
       verificationUrl: "http://localhost:3000/auth/verify-email?token=test123",
@@ -27,7 +27,7 @@ async function testEmailService() {
 
     // Test 2: Send password reset email
     console.log("\n🔐 Sending test password reset email...")
-    await sendPasswordResetEmail({
+    await sendPasswordResetEmailPromise({
       to: "test@example.com",
       name: "Test User",
       resetUrl: "http://localhost:3000/auth/reset-password?token=reset456",
