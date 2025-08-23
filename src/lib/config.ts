@@ -351,7 +351,7 @@ export const getEmailConfig = Effect.gen(function* () {
  * Utility function to check if running in development
  */
 export const isDevelopment = Effect.gen(function* () {
-  const config = yield* AppConfig
+  const config = yield* loadConfig
   return config.environment === "development"
 })
 
@@ -359,6 +359,6 @@ export const isDevelopment = Effect.gen(function* () {
  * Utility function to check if running in production
  */
 export const isProduction = Effect.gen(function* () {
-  const config = yield* AppConfig
+  const config = yield* loadConfig
   return config.environment === "production"
 })

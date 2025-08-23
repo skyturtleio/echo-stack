@@ -96,9 +96,10 @@ export class ErrorBoundary extends Component<
       message: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
-      url: window.location.href,
+      url: typeof window !== "undefined" ? window.location.href : "server",
       timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
+      userAgent:
+        typeof navigator !== "undefined" ? navigator.userAgent : "server",
     }
 
     // In development, log to console
@@ -135,8 +136,8 @@ export class ErrorBoundary extends Component<
         clearTimeout(this.retryTimeoutId)
       }
 
-      // Auto-retry after a delay for non-critical errors
-      if (this.props.level !== "critical") {
+      // Auto-retry after a delay for non-critical errors (client-side only)
+      if (this.props.level !== "critical" && typeof window !== "undefined") {
         this.retryTimeoutId = window.setTimeout(() => {
           // Additional retry logic could go here
         }, 1000)
@@ -361,7 +362,7 @@ export const handleAsyncError = (error: Error, context?: string) => {
     context: context || "async_operation",
     message: error.message,
     stack: error.stack,
-    url: window.location.href,
+    url: typeof window !== "undefined" ? window.location.href : "server",
     timestamp: new Date().toISOString(),
   }
 
@@ -386,6 +387,11 @@ export const handleAsyncError = (error: Error, context?: string) => {
 // =============================================================================
 
 export const setupGlobalErrorHandlers = () => {
+  // Only run on the client side
+  if (typeof window === "undefined") {
+    return
+  }
+
   // Handle unhandled promise rejections
   window.addEventListener("unhandledrejection", (event) => {
     handleAsyncError(
