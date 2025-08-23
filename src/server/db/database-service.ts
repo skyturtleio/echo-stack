@@ -161,21 +161,42 @@ const runDatabaseQuery = <A>(
   })
 
 /**
- * Global connection pool - created once and reused
- * This prevents the connection churn issue by maintaining a persistent pool
+ * Application-level database connection management
+ * Maintains a single connection pool for the application lifetime
+ * with proper cleanup on process termination
  */
-/**
- * Global database connection (singleton pattern for server environments)
- */
-let globalDbConnection: { client: PostgresClient; db: DrizzleDatabase } | null = null
+let applicationDbConnection: {
+  client: PostgresClient
+  db: DrizzleDatabase
+} | null = null
+
+// Register cleanup handler for graceful shutdown
+if (typeof process !== "undefined") {
+  const cleanup = () => {
+    if (applicationDbConnection) {
+      console.log("🔌 Cleaning up database connection on shutdown...")
+      try {
+        applicationDbConnection.client.end()
+        console.log("✅ Database connection cleaned up")
+      } catch (error) {
+        console.error("⚠️ Error during database cleanup:", error)
+      }
+      applicationDbConnection = null
+    }
+  }
+
+  process.on("SIGINT", cleanup)
+  process.on("SIGTERM", cleanup)
+  process.on("beforeExit", cleanup)
+}
 
 /**
- * Get or create the global database connection
+ * Get or create application-level database connection
  */
-const getGlobalConnection = (config: DatabaseConnectionConfig) =>
+const getApplicationConnection = (config: DatabaseConnectionConfig) =>
   Effect.gen(function* () {
-    if (globalDbConnection === null) {
-      console.log("🔌 Creating global database connection pool...")
+    if (applicationDbConnection === null) {
+      console.log("🔌 Creating database connection pool...")
 
       // Create postgres client with connection pooling
       const client = postgres(config.url, {
@@ -192,7 +213,7 @@ const getGlobalConnection = (config: DatabaseConnectionConfig) =>
       // Create Drizzle instance
       const db = drizzle(client, { schema })
 
-      // Test the connection
+      // Test the connection with retry logic
       yield* Effect.retry(
         Effect.tryPromise({
           try: () => client`SELECT 1 as connected, NOW() as timestamp`,
@@ -210,17 +231,18 @@ const getGlobalConnection = (config: DatabaseConnectionConfig) =>
         ),
       )
 
-      globalDbConnection = { client, db }
-      console.log("✅ Global database connection pool established")
+      applicationDbConnection = { client, db }
+      console.log("✅ Database connection pool established")
     }
 
-    return globalDbConnection
+    return applicationDbConnection
   })
 
 /**
- * Database Service Layer implementation with proper resource management
+ * Database Service Layer implementation with application-level connection management
  *
  * This layer requires ConfigService and provides DatabaseService
+ * The database connection persists for the application lifetime
  * Layer<DatabaseService, never, ConfigService>
  */
 const DatabaseServiceLive = Layer.effect(
@@ -238,8 +260,8 @@ const DatabaseServiceLive = Layer.effect(
       connectTimeoutMs: 10000,
     }
 
-    // Get or create the global connection
-    const { client, db } = yield* getGlobalConnection(connectionConfig)
+    // Get or create the application-level database connection
+    const { client, db } = yield* getApplicationConnection(connectionConfig)
 
     // Return service implementation
     return DatabaseService.of({
