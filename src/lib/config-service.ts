@@ -292,35 +292,28 @@ export const ConfigServiceLayer = Layer.effect(ConfigService, ConfigServiceLive)
 
 /**
  * Utility functions for accessing config
+ * These are lazy functions to avoid module-level service access
  */
-export const getConfig = ConfigService.pipe(
-  Effect.andThen((_) => _.getConfig()),
-)
+export const getConfig = () =>
+  ConfigService.pipe(Effect.andThen((_) => _.getConfig()))
 
-export const getDatabaseConfig = ConfigService.pipe(
-  Effect.andThen((_) => _.getDatabaseConfig()),
-)
+export const getDatabaseConfig = () =>
+  ConfigService.pipe(Effect.andThen((_) => _.getDatabaseConfig()))
 
-export const getAuthConfig = ConfigService.pipe(
-  Effect.andThen((_) => _.getAuthConfig()),
-)
+export const getAuthConfig = () =>
+  ConfigService.pipe(Effect.andThen((_) => _.getAuthConfig()))
 
-export const getEmailConfig = ConfigService.pipe(
-  Effect.andThen((_) => _.getEmailConfig()),
-)
+export const getEmailConfig = () =>
+  ConfigService.pipe(Effect.andThen((_) => _.getEmailConfig()))
 
-export const getServerConfig = ConfigService.pipe(
-  Effect.andThen((_) => _.getServerConfig()),
-)
+export const getServerConfig = () =>
+  ConfigService.pipe(Effect.andThen((_) => _.getServerConfig()))
 
-export const getJWTConfig = ConfigService.pipe(
-  Effect.andThen((_) => _.getJWTConfig()),
-)
+export const getJWTConfig = () =>
+  ConfigService.pipe(Effect.andThen((_) => _.getJWTConfig()))
 
-export const isProduction = ConfigService.pipe(
-  Effect.andThen((_) => _.isProduction()),
-)
+export const isProduction = () =>
+  ConfigService.pipe(Effect.andThen((_) => _.isProduction()))
 
-export const isDevelopment = ConfigService.pipe(
-  Effect.andThen((_) => _.isDevelopment()),
-)
+export const isDevelopment = () =>
+  ConfigService.pipe(Effect.andThen((_) => _.isDevelopment()))

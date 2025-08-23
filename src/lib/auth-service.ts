@@ -251,19 +251,19 @@ export const AuthServiceLayer = AuthServiceLive
 /**
  * Utility functions for auth operations
  */
-export const getSession = (headers: Headers) =>
+export const getSession = (headers: Headers) => () =>
   Effect.gen(function* () {
     const authService = yield* AuthService
     return yield* authService.getSession(headers)
   })
 
-export const getAuthContext = (request: Request) =>
+export const getAuthContext = (request: Request) => () =>
   Effect.gen(function* () {
     const authService = yield* AuthService
     return yield* authService.getAuthContext(request)
   })
 
-export const requireAuth = (request: Request) =>
+export const requireAuth = (request: Request) => () =>
   Effect.gen(function* () {
     const authService = yield* AuthService
     return yield* authService.requireAuth(request)

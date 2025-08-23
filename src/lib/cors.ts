@@ -13,7 +13,14 @@ import { ConfigService } from "./config-service"
 // =============================================================================
 
 export interface CorsOptions {
-  origin: string[] | string | boolean
+  origin:
+    | string[]
+    | string
+    | boolean
+    | ((
+        origin: string,
+        callback: (err: Error | null, allow?: boolean) => void,
+      ) => void)
   methods: string[]
   allowedHeaders: string[]
   credentials: boolean
@@ -23,170 +30,170 @@ export interface CorsOptions {
 }
 
 // =============================================================================
+// CORS Utilities
+// =============================================================================
+
+const createCorsHeaders = (request: Request, options: CorsOptions): Headers => {
+  const headers = new Headers()
+
+  // Handle origin
+  if (typeof options.origin === "boolean" && options.origin) {
+    headers.set("Access-Control-Allow-Origin", "*")
+  } else if (typeof options.origin === "string") {
+    headers.set("Access-Control-Allow-Origin", options.origin)
+  } else if (Array.isArray(options.origin)) {
+    const requestOrigin = request.headers.get("origin")
+    if (requestOrigin && options.origin.includes(requestOrigin)) {
+      headers.set("Access-Control-Allow-Origin", requestOrigin)
+    }
+  }
+
+  // Handle methods
+  if (options.methods.length > 0) {
+    headers.set("Access-Control-Allow-Methods", options.methods.join(", "))
+  }
+
+  // Handle allowed headers
+  if (options.allowedHeaders.length > 0) {
+    headers.set(
+      "Access-Control-Allow-Headers",
+      options.allowedHeaders.join(", "),
+    )
+  }
+
+  // Handle credentials
+  if (options.credentials) {
+    headers.set("Access-Control-Allow-Credentials", "true")
+  }
+
+  // Handle max age
+  if (options.maxAge) {
+    headers.set("Access-Control-Max-Age", options.maxAge.toString())
+  }
+
+  return headers
+}
+
+// =============================================================================
 // CORS Service
 // =============================================================================
 
-export const CorsService = Effect.gen(function* () {
-  const configService = yield* ConfigService
-  const config = yield* configService.getConfig()
+export const CorsService = () =>
+  Effect.gen(function* () {
+    const configService = yield* ConfigService
+    const config = yield* configService.getConfig()
 
-  const getCorsOptions = (): CorsOptions => {
-    const isDevelopment = config.environment === "development"
-    const isProduction = config.environment === "production"
+    const getCorsOptions = (): CorsOptions => {
+      const isDevelopment = config.environment === "development"
+      const isProduction = config.environment === "production"
 
-    if (isDevelopment) {
-      // Development: Allow all origins for ease of development
+      if (isDevelopment) {
+        // Development: Allow all origins for ease of development
+        return {
+          origin: true,
+          methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+          allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+          ],
+          credentials: true,
+          maxAge: 86400, // 24 hours
+          optionsSuccessStatus: 200,
+        }
+      }
+
+      if (isProduction) {
+        // Production: Restrict to specific trusted origins
+        return {
+          origin: (
+            origin: string,
+            callback: (err: Error | null, allow?: boolean) => void,
+          ) => {
+            // Allow requests with no origin (like mobile apps or Postman)
+            if (!origin) return callback(null, true)
+
+            const allowedOrigins = [
+              config.auth.url,
+              // Add other trusted origins here
+              "https://yourdomain.com",
+            ]
+
+            if (allowedOrigins.indexOf(origin) !== -1) {
+              callback(null, true)
+            } else {
+              callback(new Error("Not allowed by CORS"))
+            }
+          },
+          methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+          allowedHeaders: ["Content-Type", "Authorization"],
+          credentials: true,
+          maxAge: 86400,
+          optionsSuccessStatus: 200,
+        }
+      }
+
+      // Test environment: similar to development but more restrictive
       return {
-        origin: true,
+        origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-        allowedHeaders: [
-          "Content-Type",
-          "Authorization",
-          "X-Requested-With",
-          "Accept",
-          "Origin",
-        ],
+        allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
         credentials: true,
-        maxAge: 86400, // 24 hours
+        maxAge: 3600, // 1 hour
         optionsSuccessStatus: 200,
       }
     }
 
-    if (isProduction) {
-      // Production: Strict origin validation - get from environment directly
-      const corsOriginsEnv = process.env.CORS_ALLOWED_ORIGINS
+    const validateOrigin = (request: Request): boolean => {
+      const origin = request.headers.get("origin")
+      const options = getCorsOptions()
 
-      if (!corsOriginsEnv) {
-        throw new Error("CORS_ALLOWED_ORIGINS must be configured in production")
+      if (typeof options.origin === "boolean") return options.origin
+      if (typeof options.origin === "string") return options.origin === origin
+      if (Array.isArray(options.origin))
+        return origin ? options.origin.includes(origin) : false
+
+      return false
+    }
+
+    const handleCorsRequest = (request: Request): Response | null => {
+      const method = request.method
+
+      if (method === "OPTIONS") {
+        // Handle preflight request
+        const options = getCorsOptions()
+        const corsHeaders = createCorsHeaders(request, options)
+
+        return new Response(null, {
+          status: options.optionsSuccessStatus || 204,
+          headers: corsHeaders,
+        })
       }
 
-      const allowedOrigins = corsOriginsEnv
-        .split(",")
-        .map((origin) => origin.trim())
-        .filter(Boolean)
-
-      return {
-        origin: allowedOrigins,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: [
-          "Content-Type",
-          "Authorization",
-          "X-Requested-With",
-          "Accept",
-        ],
-        credentials: true,
-        maxAge: 86400,
-        optionsSuccessStatus: 204,
-      }
+      return null // Let the request continue
     }
 
-    // Test environment: Minimal CORS for testing
-    return {
-      origin: false,
-      methods: ["GET", "POST", "PUT", "DELETE"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-      credentials: false,
-      maxAge: 0,
-    }
-  }
+    const addCorsHeaders = (request: Request, response: Response): Response => {
+      const options = getCorsOptions()
+      const corsHeaders = createCorsHeaders(request, options)
 
-  const validateOrigin = (
-    origin: string,
-    allowedOrigins: string[],
-  ): boolean => {
-    if (!origin) return false
-
-    for (const allowed of allowedOrigins) {
-      // Support wildcard subdomains (e.g., "*.example.com")
-      if (allowed.startsWith("*.")) {
-        const domain = allowed.slice(2)
-        if (origin.endsWith(`.${domain}`) || origin === domain) {
-          return true
-        }
-      } else if (origin === allowed) {
-        return true
-      }
-    }
-
-    return false
-  }
-
-  const createCorsHeaders = (
-    request: Request,
-    options: CorsOptions,
-  ): Headers => {
-    const headers = new Headers()
-    const origin = request.headers.get("origin")
-
-    // Handle origin
-    if (options.origin === true) {
-      headers.set("Access-Control-Allow-Origin", origin || "*")
-    } else if (typeof options.origin === "string") {
-      headers.set("Access-Control-Allow-Origin", options.origin)
-    } else if (Array.isArray(options.origin) && origin) {
-      if (validateOrigin(origin, options.origin)) {
-        headers.set("Access-Control-Allow-Origin", origin)
-      }
-    }
-
-    // Set credentials
-    if (options.credentials) {
-      headers.set("Access-Control-Allow-Credentials", "true")
-    }
-
-    // Handle preflight requests
-    if (request.method === "OPTIONS") {
-      headers.set("Access-Control-Allow-Methods", options.methods.join(", "))
-      headers.set(
-        "Access-Control-Allow-Headers",
-        options.allowedHeaders.join(", "),
-      )
-
-      if (options.maxAge !== undefined) {
-        headers.set("Access-Control-Max-Age", options.maxAge.toString())
-      }
-    }
-
-    // Set vary header to ensure proper caching
-    headers.set("Vary", "Origin")
-
-    return headers
-  }
-
-  const handleCorsRequest = (request: Request): Response | null => {
-    const options = getCorsOptions()
-
-    if (request.method === "OPTIONS") {
-      // Handle preflight request
-      const headers = createCorsHeaders(request, options)
-      return new Response(null, {
-        status: options.optionsSuccessStatus || 204,
-        headers,
+      // Add CORS headers to existing response
+      corsHeaders.forEach((value, key) => {
+        response.headers.set(key, value)
       })
+
+      return response
     }
 
-    return null // Let the request continue
-  }
-
-  const addCorsHeaders = (request: Request, response: Response): Response => {
-    const options = getCorsOptions()
-    const corsHeaders = createCorsHeaders(request, options)
-
-    // Add CORS headers to existing response
-    corsHeaders.forEach((value, key) => {
-      response.headers.set(key, value)
-    })
-
-    return response
-  }
-
-  return {
-    getCorsOptions,
-    handleCorsRequest,
-    addCorsHeaders,
-    validateOrigin,
-  } as const
-})
+    return {
+      getCorsOptions,
+      handleCorsRequest,
+      addCorsHeaders,
+      validateOrigin,
+    } as const
+  })
 
 // =============================================================================
 // Middleware Helper
@@ -195,13 +202,14 @@ export const CorsService = Effect.gen(function* () {
 /**
  * Creates a CORS middleware function for use with TanStack Start
  */
-export const createCorsMiddleware = Effect.gen(function* () {
-  const corsService = yield* CorsService
+export const createCorsMiddleware = () =>
+  Effect.gen(function* () {
+    const corsService = yield* CorsService()
 
-  return (request: Request): Response | null => {
-    return corsService.handleCorsRequest(request)
-  }
-})
+    return (request: Request): Response | null => {
+      return corsService.handleCorsRequest(request)
+    }
+  })
 
 // =============================================================================
 // Response Helper
@@ -212,6 +220,6 @@ export const createCorsMiddleware = Effect.gen(function* () {
  */
 export const withCorsHeaders = (request: Request, response: Response) =>
   Effect.gen(function* () {
-    const corsService = yield* CorsService
+    const corsService = yield* CorsService()
     return corsService.addCorsHeaders(request, response)
   })

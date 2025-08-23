@@ -19,7 +19,7 @@ export async function getAuthContextEffect(
 ): Promise<AuthContext> {
   try {
     return await Effect.runPromise(
-      getAuthContext(request).pipe(Effect.provide(AppLayer)),
+      getAuthContext(request)().pipe(Effect.provide(AppLayer)),
     )
   } catch (error) {
     console.error("Auth context error:", error)
@@ -40,7 +40,7 @@ export async function requireAuthEffect(
 ): Promise<AuthContext> {
   try {
     return await Effect.runPromise(
-      requireAuth(request).pipe(Effect.provide(AppLayer)),
+      requireAuth(request)().pipe(Effect.provide(AppLayer)),
     )
   } catch (error) {
     console.error("Authentication failed:", error)
@@ -58,13 +58,13 @@ export async function requireAuthEffect(
  * This version returns an Effect that can be composed with other operations
  */
 export const getAuthContextEffect_ = (request: Request) =>
-  getAuthContext(request)
+  getAuthContext(request)()
 
 /**
- * Effect-based require auth for use in server functions
+ * Alternative version that throws on auth failure
  * This version returns an Effect that can be composed with other operations
  */
-export const requireAuthEffect_ = (request: Request) => requireAuth(request)
+export const requireAuthEffect_ = (request: Request) => requireAuth(request)()
 
 /**
  * Helper to run auth operations with proper error handling

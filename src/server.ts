@@ -38,7 +38,7 @@ const initializeServer = Effect.gen(function* () {
   yield* logger.info(`🌐 Server: ${config.server.host}:${config.server.port}`)
 
   // Check database health
-  const health = yield* checkDatabaseHealth
+  const health = yield* checkDatabaseHealth()
   if (!health.healthy) {
     return yield* Effect.fail(
       new Error(`Database health check failed: ${health.message}`),

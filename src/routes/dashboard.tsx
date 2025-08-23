@@ -4,9 +4,6 @@ import { signOut, useSession } from "~/lib/auth.client"
 import { PageErrorBoundary } from "~/components/ErrorBoundary"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { Effect } from "effect"
-import { ConfigService } from "../lib/config-service"
-import { checkDatabaseHealth } from "../server/db/database-service"
-import { AppLayer } from "../lib/app-services"
 
 /**
  * Echo Stack Admin Dashboard
@@ -34,12 +31,17 @@ interface ConfigData {
 }
 
 const getSystemData = createServerFn().handler(async () => {
+  // Import services dynamically inside server function
+  const { ConfigService } = await import("../lib/config-service")
+  const { checkDatabaseHealth } = await import("../server/db/database-service")
+  const { AppLayer } = await import("../lib/app-services")
+
   try {
     const result = await Effect.runPromise(
       Effect.gen(function* () {
         const configService = yield* ConfigService
         const config = yield* configService.getConfig()
-        const dbHealth = yield* checkDatabaseHealth
+        const dbHealth = yield* checkDatabaseHealth()
 
         const systemHealth: SystemHealth = {
           overall: dbHealth.healthy ? "healthy" : "unhealthy",
@@ -77,7 +79,10 @@ const getSystemData = createServerFn().handler(async () => {
           },
         }
 
-        return { systemHealth, safeConfig }
+        return {
+          systemHealth,
+          safeConfig,
+        }
       }).pipe(Effect.provide(AppLayer)),
     )
 

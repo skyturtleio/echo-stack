@@ -7,9 +7,6 @@
 
 import { createServerFileRoute } from "@tanstack/react-start/server"
 import { Effect } from "effect"
-import { AppLayer } from "../../lib/app-services"
-import { ConfigService } from "../../lib/config-service"
-import { checkDatabaseHealth } from "../../server/db/database-service"
 import { createApiSuccess, createApiError } from "../../lib/errors"
 
 interface HealthCheckResponse {
@@ -36,13 +33,20 @@ const startTime = Date.now()
  * GET /api/health - Comprehensive health check
  */
 async function healthCheck(): Promise<Response> {
+  // Import services dynamically inside function
+  const { ConfigService } = await import("../../lib/config-service")
+  const { checkDatabaseHealth } = await import(
+    "../../server/db/database-service"
+  )
+  const { AppLayer } = await import("../../lib/app-services")
+
   const healthCheckEffect = Effect.gen(function* () {
     // Get configuration service
     const configService = yield* ConfigService
     const config = yield* configService.getConfig()
 
     // Check database health
-    const dbHealth = yield* checkDatabaseHealth
+    const dbHealth = yield* checkDatabaseHealth()
 
     // Calculate uptime
     const uptime = (Date.now() - startTime) / 1000

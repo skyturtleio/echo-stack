@@ -100,27 +100,28 @@ export const withTransaction = <E, A>(
 /**
  * Health check for database connection
  */
-export const checkDatabaseHealth = Effect.gen(function* () {
-  const { query } = yield* DatabaseService
+export const checkDatabaseHealth = () =>
+  Effect.gen(function* () {
+    const { query } = yield* DatabaseService
 
-  return yield* Effect.tryPromise({
-    try: async () => {
-      const result = await query.execute(
-        sql`SELECT 1 as healthy, NOW() as timestamp`,
-      )
-      return {
-        healthy: true,
-        timestamp: result[0]?.timestamp,
-        message: "Database connection is healthy",
-      }
-    },
-    catch: (error) => ({
-      healthy: false,
-      message: `Database health check failed: ${error}`,
-      error,
-    }),
+    return yield* Effect.tryPromise({
+      try: async () => {
+        const result = await query.execute(
+          sql`SELECT 1 as healthy, NOW() as timestamp`,
+        )
+        return {
+          healthy: true,
+          timestamp: result[0]?.timestamp,
+          message: "Database connection is healthy",
+        }
+      },
+      catch: (error) => ({
+        healthy: false,
+        message: `Database health check failed: ${error}`,
+        error,
+      }),
+    })
   })
-})
 
 // Re-export for convenience
 export { sql }

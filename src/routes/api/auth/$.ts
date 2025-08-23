@@ -1,16 +1,22 @@
 import { createServerFileRoute } from "@tanstack/react-start/server"
 import { Effect } from "effect"
-import { AuthService } from "~/lib/auth-service"
-import { AppLayer } from "~/lib/app-services"
 
 export const ServerRoute = createServerFileRoute("/api/auth/$").methods({
-  GET: ({ request }) => {
+  GET: async ({ request }) => {
+    // Import services dynamically
+    const { AuthService } = await import("~/lib/auth-service")
+    const { AppLayer } = await import("~/lib/app-services")
+
     return Effect.gen(function* () {
       const authService = yield* AuthService
       return authService.auth.handler(request)
     }).pipe(Effect.provide(AppLayer), Effect.runPromise)
   },
-  POST: ({ request }) => {
+  POST: async ({ request }) => {
+    // Import services dynamically
+    const { AuthService } = await import("~/lib/auth-service")
+    const { AppLayer } = await import("~/lib/app-services")
+
     return Effect.gen(function* () {
       const authService = yield* AuthService
       return authService.auth.handler(request)

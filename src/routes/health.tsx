@@ -1,9 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { Effect } from "effect"
-import { AppLayer } from "../lib/app-services"
-import { ConfigService } from "../lib/config-service"
-import { checkDatabaseHealth } from "../server/db/database-service"
 
 interface DetailedDatabaseHealth {
   healthy: boolean
@@ -33,13 +30,18 @@ interface HealthStatus {
  */
 
 const getHealthStatus = createServerFn({ method: "GET" }).handler(async () => {
+  // Import services dynamically inside server function
+  const { ConfigService } = await import("../lib/config-service")
+  const { checkDatabaseHealth } = await import("../server/db/database-service")
+  const { AppLayer } = await import("../lib/app-services")
+
   try {
     // Simplified Effect usage - direct service access
     const healthData = await Effect.runPromise(
       Effect.gen(function* () {
         const configService = yield* ConfigService
         const config = yield* configService.getConfig()
-        const dbHealth = yield* checkDatabaseHealth
+        const dbHealth = yield* checkDatabaseHealth()
 
         return {
           status: dbHealth.healthy ? "ok" : "error",

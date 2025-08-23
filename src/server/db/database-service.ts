@@ -168,12 +168,12 @@ let globalDbConnection: { client: PostgresClient; db: DrizzleDatabase } | null =
   null
 
 /**
- * Get or create the global database connection
+ * Create managed database connection with proper cleanup
  */
-const getGlobalConnection = (config: DatabaseConnectionConfig) =>
-  Effect.gen(function* () {
-    if (globalDbConnection === null) {
-      console.log("🔌 Creating global database connection pool...")
+const createManagedConnection = (config: DatabaseConnectionConfig) =>
+  Effect.acquireRelease(
+    Effect.gen(function* () {
+      console.log("🔌 Creating database connection pool...")
 
       // Create postgres client with connection pooling
       const client = postgres(config.url, {
@@ -208,15 +208,51 @@ const getGlobalConnection = (config: DatabaseConnectionConfig) =>
         ),
       )
 
-      globalDbConnection = { client, db }
-      console.log("✅ Global database connection pool established")
+      console.log("✅ Database connection pool established")
+      return { client, db }
+    }),
+    ({ client }) =>
+      Effect.gen(function* () {
+        console.log("🔒 Closing database connection pool...")
+        yield* Effect.tryPromise({
+          try: () => client.end(),
+          catch: (error) => {
+            console.error("Error closing database connection:", error)
+            return new Error(`Failed to close database connection: ${error}`)
+          },
+        }).pipe(Effect.ignore)
+        console.log("✅ Database connection pool closed")
+      }),
+  )
+
+/**
+ * Get or create the global database connection
+ * Note: For now, keeping global connection for compatibility,
+ * but with proper cleanup registration
+ */
+const getGlobalConnection = (config: DatabaseConnectionConfig) =>
+  Effect.gen(function* () {
+    if (globalDbConnection === null) {
+      const managed = yield* createManagedConnection(config)
+      globalDbConnection = managed
+
+      // Register cleanup for process termination
+      process.once("SIGTERM", () => {
+        Effect.runSync(Effect.tryPromise(() => managed.client.end()))
+      })
+      process.once("SIGINT", () => {
+        Effect.runSync(Effect.tryPromise(() => managed.client.end()))
+      })
     }
 
     return globalDbConnection
   })
 
 /**
- * Database Service Layer implementation - using global connection pool
+ * Database Service Layer implementation with proper resource management
+ *
+ * This layer requires ConfigService and provides DatabaseService
+ * Layer<DatabaseService, never, ConfigService>
  */
 const DatabaseServiceLive = Layer.effect(
   DatabaseService,
@@ -255,7 +291,8 @@ const DatabaseServiceLive = Layer.effect(
 )
 
 /**
- * Provide the DatabaseService with ConfigService dependency
+ * Database Service Layer - requires ConfigService dependency
+ * Type: Layer<DatabaseService, never, ConfigService>
  */
 export const DatabaseServiceLayer = DatabaseServiceLive
 
@@ -288,10 +325,11 @@ export const executeQuery = <A>(
     return yield* dbService.runQuery(queryBuilder)
   })
 
-export const checkDatabaseHealth = Effect.gen(function* () {
-  const dbService = yield* DatabaseService
-  return yield* dbService.health()
-})
+export const checkDatabaseHealth = () =>
+  Effect.gen(function* () {
+    const dbService = yield* DatabaseService
+    return yield* dbService.health()
+  })
 
 // Re-export for convenience
 export { sql }
