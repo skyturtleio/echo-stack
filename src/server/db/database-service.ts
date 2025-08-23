@@ -164,16 +164,18 @@ const runDatabaseQuery = <A>(
  * Global connection pool - created once and reused
  * This prevents the connection churn issue by maintaining a persistent pool
  */
-let globalDbConnection: { client: PostgresClient; db: DrizzleDatabase } | null =
-  null
+/**
+ * Global database connection (singleton pattern for server environments)
+ */
+let globalDbConnection: { client: PostgresClient; db: DrizzleDatabase } | null = null
 
 /**
- * Create managed database connection with proper cleanup
+ * Get or create the global database connection
  */
-const createManagedConnection = (config: DatabaseConnectionConfig) =>
-  Effect.acquireRelease(
-    Effect.gen(function* () {
-      console.log("🔌 Creating database connection pool...")
+const getGlobalConnection = (config: DatabaseConnectionConfig) =>
+  Effect.gen(function* () {
+    if (globalDbConnection === null) {
+      console.log("🔌 Creating global database connection pool...")
 
       // Create postgres client with connection pooling
       const client = postgres(config.url, {
@@ -208,41 +210,8 @@ const createManagedConnection = (config: DatabaseConnectionConfig) =>
         ),
       )
 
-      console.log("✅ Database connection pool established")
-      return { client, db }
-    }),
-    ({ client }) =>
-      Effect.gen(function* () {
-        console.log("🔒 Closing database connection pool...")
-        yield* Effect.tryPromise({
-          try: () => client.end(),
-          catch: (error) => {
-            console.error("Error closing database connection:", error)
-            return new Error(`Failed to close database connection: ${error}`)
-          },
-        }).pipe(Effect.ignore)
-        console.log("✅ Database connection pool closed")
-      }),
-  )
-
-/**
- * Get or create the global database connection
- * Note: For now, keeping global connection for compatibility,
- * but with proper cleanup registration
- */
-const getGlobalConnection = (config: DatabaseConnectionConfig) =>
-  Effect.gen(function* () {
-    if (globalDbConnection === null) {
-      const managed = yield* createManagedConnection(config)
-      globalDbConnection = managed
-
-      // Register cleanup for process termination
-      process.once("SIGTERM", () => {
-        Effect.runSync(Effect.tryPromise(() => managed.client.end()))
-      })
-      process.once("SIGINT", () => {
-        Effect.runSync(Effect.tryPromise(() => managed.client.end()))
-      })
+      globalDbConnection = { client, db }
+      console.log("✅ Global database connection pool established")
     }
 
     return globalDbConnection

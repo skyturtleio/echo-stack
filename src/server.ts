@@ -30,7 +30,7 @@ const initializeServer = async () => {
   const { checkDatabaseHealth } = await import("./server/db/database-service")
   const { AppLayer } = await import("./lib/app-services")
 
-  return Effect.gen(function* () {
+  const serverEffect = Effect.gen(function* () {
     const logger = yield* Logger
     yield* logger.info("🚀 Starting Echo Stack server...")
 
@@ -54,7 +54,9 @@ const initializeServer = async () => {
 
     yield* logger.success("✅ All services initialized successfully")
     return config
-  }).pipe(Effect.provide(AppLayer))
+  })
+
+  return await Effect.runPromise(serverEffect.pipe(Effect.provide(AppLayer)))
 }
 
 // Guard against dual initialization in development (Vite runs both SSR and client processes)
@@ -64,8 +66,7 @@ if (!(globalKey in globalThis)) {
 
   // Run initialization with proper error handling
   try {
-    const serverEffect = await initializeServer()
-    await Effect.runPromise(serverEffect)
+    await initializeServer()
   } catch (error) {
     console.error("\n💥 Server failed to start:")
     console.error(`   ${error}`)

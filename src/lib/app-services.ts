@@ -13,18 +13,25 @@ import { LoggerLayer } from "./logger-service"
  */
 
 /**
- * Simple Layer composition - let Effect handle dependency resolution
+ * Main application layer that provides all services
  *
- * Layer.mergeAll will automatically resolve dependencies:
- * 1. ConfigService and Logger have no dependencies
- * 2. DatabaseService depends on ConfigService
- * 3. AuthService depends on ConfigService + DatabaseService
+ * Dependencies are resolved explicitly:
+ * - ConfigService has no dependencies (reads from environment)
+ * - DatabaseService depends on ConfigService
+ * - AuthService depends on ConfigService and DatabaseService
  */
 export const AppLayer = Layer.mergeAll(
-  LoggerLayer, // No dependencies
-  ConfigServiceLayer, // No dependencies
-  DatabaseServiceLayer, // Requires ConfigService
-  AuthServiceLayer, // Requires ConfigService + DatabaseService
+  LoggerLayer,
+  ConfigServiceLayer,
+  DatabaseServiceLayer.pipe(Layer.provide(ConfigServiceLayer)),
+  AuthServiceLayer.pipe(
+    Layer.provide(
+      Layer.mergeAll(
+        ConfigServiceLayer,
+        DatabaseServiceLayer.pipe(Layer.provide(ConfigServiceLayer)),
+      ),
+    ),
+  ),
 )
 
 /**
