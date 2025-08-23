@@ -2,6 +2,7 @@ import { Layer } from "effect"
 import { ConfigServiceLayer } from "./config-service"
 import { DatabaseServiceLayer } from "../server/db/database-service"
 import { AuthServiceLayer } from "./auth-service"
+import { LoggerLayer } from "./logger-service"
 
 /**
  * Application Services Layer
@@ -15,11 +16,13 @@ import { AuthServiceLayer } from "./auth-service"
  * Main application layer that provides all services
  *
  * Dependencies are resolved automatically:
+ * - LoggerLayer has no dependencies (reads from environment)
  * - ConfigService has no dependencies (reads from environment)
  * - DatabaseService depends on ConfigService
  * - AuthService depends on ConfigService and DatabaseService
  */
 export const AppLayer = Layer.mergeAll(
+  LoggerLayer,
   ConfigServiceLayer,
   DatabaseServiceLayer.pipe(Layer.provide(ConfigServiceLayer)),
   AuthServiceLayer.pipe(

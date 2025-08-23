@@ -3,11 +3,12 @@ import {
   defaultStreamHandler,
 } from "@tanstack/react-start/server"
 import { createRouter } from "./router"
-import { Effect, Console } from "effect"
+import { Effect } from "effect"
 import { AppLayer } from "./lib/app-services"
 import { ConfigService } from "./lib/config-service"
 import { checkDatabaseHealth } from "./server/db/database-service"
 import { setupGracefulShutdown } from "./lib/graceful-shutdown"
+import { Logger } from "./lib/logger-service"
 
 /**
  * Enhanced Server Entry Point with Resource Management
@@ -27,13 +28,14 @@ setupGracefulShutdown({
 
 // Initialize services and validate startup
 const initializeServer = Effect.gen(function* () {
-  yield* Console.log("🚀 Starting Echo Stack server...")
+  const logger = yield* Logger
+  yield* logger.info("🚀 Starting Echo Stack server...")
 
   // Validate configuration
   const configService = yield* ConfigService
   const config = yield* configService.getConfig()
-  yield* Console.log(`📋 Environment: ${config.environment}`)
-  yield* Console.log(`🌐 Server: ${config.server.host}:${config.server.port}`)
+  yield* logger.info(`📋 Environment: ${config.environment}`)
+  yield* logger.info(`🌐 Server: ${config.server.host}:${config.server.port}`)
 
   // Check database health
   const health = yield* checkDatabaseHealth
@@ -43,11 +45,11 @@ const initializeServer = Effect.gen(function* () {
     )
   }
 
-  yield* Console.log(
+  yield* logger.success(
     `🏥 Database: ✅ healthy (${health.latencyMs}ms, ${health.connectionCount} connections)`,
   )
 
-  yield* Console.log("✅ All services initialized successfully")
+  yield* logger.success("✅ All services initialized successfully")
   return config
 })
 

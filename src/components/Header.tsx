@@ -42,12 +42,7 @@ export default function Header() {
                 >
                   Health
                 </Link>
-                <Link
-                  to="/effect-config"
-                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Config
-                </Link>
+
                 <span className="text-gray-500 text-sm">
                   {session.user.name}
                 </span>

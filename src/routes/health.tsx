@@ -33,34 +33,34 @@ interface HealthStatus {
  */
 
 const getHealthStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const healthCheck = Effect.gen(function* () {
-    // Get configuration
-    const configService = yield* ConfigService
-    const config = yield* configService.getConfig()
-
-    // Check database health
-    const dbHealth = yield* checkDatabaseHealth
-
-    return {
-      status: dbHealth.healthy ? "ok" : "error",
-      timestamp: new Date().toISOString(),
-      environment: config.environment,
-      database: {
-        healthy: dbHealth.healthy,
-        message: dbHealth.message,
-        latencyMs: dbHealth.latencyMs,
-        connectionCount: dbHealth.connectionCount,
-        timestamp: dbHealth.timestamp.toISOString(),
-      },
-      server: {
-        host: config.server.host,
-        port: config.server.port,
-      },
-    }
-  })
-
   try {
-    return await Effect.runPromise(healthCheck.pipe(Effect.provide(AppLayer)))
+    // Simplified Effect usage - direct service access
+    const healthData = await Effect.runPromise(
+      Effect.gen(function* () {
+        const configService = yield* ConfigService
+        const config = yield* configService.getConfig()
+        const dbHealth = yield* checkDatabaseHealth
+
+        return {
+          status: dbHealth.healthy ? "ok" : "error",
+          timestamp: new Date().toISOString(),
+          environment: config.environment,
+          database: {
+            healthy: dbHealth.healthy,
+            message: dbHealth.message,
+            latencyMs: dbHealth.latencyMs,
+            connectionCount: dbHealth.connectionCount,
+            timestamp: dbHealth.timestamp.toISOString(),
+          },
+          server: {
+            host: config.server.host,
+            port: config.server.port,
+          },
+        }
+      }).pipe(Effect.provide(AppLayer)),
+    )
+
+    return healthData
   } catch (error) {
     // Fallback health status if services are not available
     return {
