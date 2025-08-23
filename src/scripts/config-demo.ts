@@ -4,15 +4,15 @@
  * Strict Configuration Demo Script
  *
  * This script demonstrates the NEW strict configuration approach.
- * Run with: `bun run src/config-strict-demo.ts`
+ * Run with: `bun run src/scripts/config-demo.ts`
  */
 
 import { Effect } from "effect"
-import { validateStartupConfig } from "./lib/config-startup"
+import { validateStartupConfig } from "../lib/config-startup"
 import {
   getStrictProvider,
   getDevelopmentProviderWithFallbacks,
-} from "./lib/config-provider"
+} from "../lib/config-provider"
 
 async function main() {
   console.log("🎯 Echo Stack - Strict Config Demo")

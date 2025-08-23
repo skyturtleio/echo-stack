@@ -59,7 +59,7 @@ export const validateStartupConfig = Effect.gen(function* () {
     console.error("   2. Fill in all required environment variables")
     console.error("   3. Restart the application")
     console.error(
-      "   4. Visit http://localhost:3000/effect-config to verify configuration\n",
+      "   4. Run 'bun run src/scripts/config-demo.ts' to test configuration\n",
     )
 
     return yield* Effect.fail(error)

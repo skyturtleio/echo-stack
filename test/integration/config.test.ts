@@ -1,14 +1,10 @@
 import { Effect } from "effect"
+import { ConfigService, ConfigServiceLayer } from "../../src/lib/config-service"
 import {
-  loadConfig,
-  loadValidatedConfig,
-  defaultProvider,
   testProvider,
   createTestProvider,
-  getEmailConfig,
-  isDevelopment,
-  isProduction,
-} from "../../src/lib/effect-config"
+  defaultProvider,
+} from "../../src/lib/config-provider"
 import {
   Logger,
   LoggerLayer,
@@ -26,13 +22,14 @@ import {
  */
 export const basicExample = Effect.gen(function* () {
   const logger = yield* Logger
+  const configService = yield* ConfigService
 
   yield* logger.info(aviationMessages.starting("basic configuration"), {
     service: "config-example",
     operation: "basic-config",
   })
 
-  const config = yield* loadConfig
+  const config = yield* configService.getConfig()
 
   yield* logger.info("Configuration loaded", {
     service: "config-example",
@@ -53,13 +50,14 @@ export const basicExample = Effect.gen(function* () {
  */
 export const validatedExample = Effect.gen(function* () {
   const logger = yield* Logger
+  const configService = yield* ConfigService
 
   yield* logger.info(aviationMessages.starting("validated configuration"), {
     service: "config-example",
     operation: "validated-config",
   })
 
-  const config = yield* loadValidatedConfig
+  const config = yield* configService.getConfig()
 
   yield* logger.success("Configuration validation passed!", {
     service: "config-example",
@@ -73,6 +71,7 @@ export const validatedExample = Effect.gen(function* () {
  */
 export const environmentExample = Effect.gen(function* () {
   const logger = yield* Logger
+  const configService = yield* ConfigService
 
   yield* logger.info(
     aviationMessages.starting("environment-specific configuration"),
@@ -82,8 +81,8 @@ export const environmentExample = Effect.gen(function* () {
     },
   )
 
-  const isDev = yield* isDevelopment
-  const isProd = yield* isProduction
+  const isDev = yield* configService.isDevelopment()
+  const isProd = yield* configService.isProduction()
 
   yield* logger.info("Environment modes", {
     service: "config-example",
@@ -91,7 +90,7 @@ export const environmentExample = Effect.gen(function* () {
     metadata: { development: isDev, production: isProd },
   })
 
-  const emailConfig = yield* getEmailConfig
+  const emailConfig = yield* configService.getEmailConfig()
   yield* logger.info(`Email provider: ${emailConfig.provider}`, {
     service: "config-example",
     operation: "environment-check",
@@ -106,13 +105,14 @@ export const environmentExample = Effect.gen(function* () {
  */
 export const testProviderExample = Effect.gen(function* () {
   const logger = yield* Logger
+  const configService = yield* ConfigService
 
   yield* logger.info(aviationMessages.starting("custom test provider"), {
     service: "config-example",
     operation: "test-provider",
   })
 
-  const config = yield* loadConfig
+  const config = yield* configService.getConfig()
 
   yield* logger.info("Test configuration loaded", {
     service: "config-example",
@@ -131,14 +131,15 @@ export const testProviderExample = Effect.gen(function* () {
  */
 export const errorHandlingExample = Effect.gen(function* () {
   const logger = yield* Logger
+  const configService = yield* ConfigService
 
   yield* logger.info(aviationMessages.starting("error handling"), {
     service: "config-example",
     operation: "error-handling",
   })
 
-  // This will fail validation if BETTER_AUTH_SECRET is too short
-  const result = yield* loadValidatedConfig.pipe(
+  // This will fail validation if configuration is invalid
+  const result = yield* configService.getConfig().pipe(
     Effect.catchAll((error) =>
       Effect.gen(function* () {
         const innerLogger = yield* Logger
@@ -172,13 +173,14 @@ export const errorHandlingExample = Effect.gen(function* () {
  */
 export const productionCheckExample = Effect.gen(function* () {
   const logger = yield* Logger
+  const configService = yield* ConfigService
 
   yield* logger.info(aviationMessages.starting("production configuration"), {
     service: "config-example",
     operation: "production-check",
   })
 
-  const config = yield* loadValidatedConfig
+  const config = yield* configService.getConfig()
 
   yield* logger.success("Production configuration valid", {
     service: "config-example",
@@ -205,8 +207,8 @@ export const productionCheckExample = Effect.gen(function* () {
         ["BETTER_AUTH_URL", "https://app.example.com"],
         ["JWT_SECRET", "jwt-secret-for-integrations-minimum-32-chars"],
         ["JWT_ISSUER", "example-app"],
-        ["RESEND.API_KEY", "re_123456789"],
-        ["RESEND.FROM_EMAIL", "hello@example.com"],
+        ["RESEND_API_KEY", "re_123456789"],
+        ["RESEND_FROM_EMAIL", "hello@example.com"],
       ]),
     ),
   ),
@@ -224,34 +226,22 @@ export const runAllExamples = Effect.gen(function* () {
   })
 
   // Run basic example with default provider (reads from .env)
-  yield* basicExample.pipe(
-    Effect.withConfigProvider(defaultProvider),
-    Effect.provide(LoggerLayer),
-  )
+  yield* basicExample.pipe(Effect.withConfigProvider(defaultProvider))
 
   // Run validated example
-  yield* validatedExample.pipe(
-    Effect.withConfigProvider(defaultProvider),
-    Effect.provide(LoggerLayer),
-  )
+  yield* validatedExample.pipe(Effect.withConfigProvider(defaultProvider))
 
   // Run environment example
-  yield* environmentExample.pipe(
-    Effect.withConfigProvider(defaultProvider),
-    Effect.provide(LoggerLayer),
-  )
+  yield* environmentExample.pipe(Effect.withConfigProvider(defaultProvider))
 
   // Run test provider example
-  yield* testProviderExample.pipe(Effect.provide(LoggerLayer))
+  yield* testProviderExample
 
   // Run error handling example
-  yield* errorHandlingExample.pipe(
-    Effect.withConfigProvider(defaultProvider),
-    Effect.provide(LoggerLayer),
-  )
+  yield* errorHandlingExample.pipe(Effect.withConfigProvider(defaultProvider))
 
   // Run production check example
-  yield* productionCheckExample.pipe(Effect.provide(LoggerLayer))
+  yield* productionCheckExample
 
   yield* logger.success(aviationMessages.completing("all examples"), {
     service: "config-example",
@@ -261,7 +251,12 @@ export const runAllExamples = Effect.gen(function* () {
 
 // Export a simple function to run the examples
 export const runExamples = () => {
-  return Effect.runPromise(runAllExamples.pipe(Effect.provide(LoggerLayer)))
+  return Effect.runPromise(
+    runAllExamples.pipe(
+      Effect.provide(ConfigServiceLayer),
+      Effect.provide(LoggerLayer),
+    ),
+  )
 }
 
 // Run if this file is executed directly
