@@ -161,88 +161,87 @@ const runDatabaseQuery = <A>(
   })
 
 /**
- * Application-level database connection management
- * Maintains a single connection pool for the application lifetime
- * with proper cleanup on process termination
+ * Application-level database connection resource
+ * Uses a lazy initialization pattern suitable for web servers
  */
-let applicationDbConnection: {
+let applicationDbResource: {
   client: PostgresClient
   db: DrizzleDatabase
+  cleanup: () => Promise<void>
 } | null = null
 
-// Register cleanup handler for graceful shutdown
-if (typeof process !== "undefined") {
-  const cleanup = () => {
-    if (applicationDbConnection) {
-      console.log("🔌 Cleaning up database connection on shutdown...")
+/**
+ * Initialize database connection with Effect-style error handling and resource management
+ * This creates a connection that persists for the application lifetime
+ */
+const getOrCreateDatabaseConnection = (config: DatabaseConnectionConfig) =>
+  Effect.gen(function* () {
+    if (applicationDbResource !== null) {
+      return applicationDbResource
+    }
+
+    console.log("🔌 Creating database connection pool...")
+
+    // Create postgres client with connection pooling
+    const client = postgres(config.url, {
+      max: config.maxConnections,
+      idle_timeout: Math.floor(config.idleTimeoutMs / 1000),
+      connect_timeout: Math.floor(config.connectTimeoutMs / 1000),
+      transform: {
+        undefined: null,
+      },
+      prepare: false,
+      debug: process.env.NODE_ENV === "development",
+    })
+
+    // Create Drizzle instance
+    const db = drizzle(client, { schema })
+
+    // Test the connection with retry logic
+    yield* Effect.retry(
+      Effect.tryPromise({
+        try: () => client`SELECT 1 as connected, NOW() as timestamp`,
+        catch: (error) =>
+          new DatabaseConnectionError({
+            cause: error,
+            connectionString: config.url.replace(/:\/\/[^@]+@/, "://***:***@"),
+          }),
+      }),
+      Schedule.exponential("1 second").pipe(
+        Schedule.intersect(Schedule.recurs(3)),
+      ),
+    )
+
+    // Define cleanup function
+    const cleanup = async () => {
+      console.log("🔌 Cleaning up database connection...")
       try {
-        applicationDbConnection.client.end()
+        await client.end()
         console.log("✅ Database connection cleaned up")
       } catch (error) {
         console.error("⚠️ Error during database cleanup:", error)
       }
-      applicationDbConnection = null
-    }
-  }
-
-  process.on("SIGINT", cleanup)
-  process.on("SIGTERM", cleanup)
-  process.on("beforeExit", cleanup)
-}
-
-/**
- * Get or create application-level database connection
- */
-const getApplicationConnection = (config: DatabaseConnectionConfig) =>
-  Effect.gen(function* () {
-    if (applicationDbConnection === null) {
-      console.log("🔌 Creating database connection pool...")
-
-      // Create postgres client with connection pooling
-      const client = postgres(config.url, {
-        max: config.maxConnections,
-        idle_timeout: Math.floor(config.idleTimeoutMs / 1000),
-        connect_timeout: Math.floor(config.connectTimeoutMs / 1000),
-        transform: {
-          undefined: null,
-        },
-        prepare: false,
-        debug: process.env.NODE_ENV === "development",
-      })
-
-      // Create Drizzle instance
-      const db = drizzle(client, { schema })
-
-      // Test the connection with retry logic
-      yield* Effect.retry(
-        Effect.tryPromise({
-          try: () => client`SELECT 1 as connected, NOW() as timestamp`,
-          catch: (error) =>
-            new DatabaseConnectionError({
-              cause: error,
-              connectionString: config.url.replace(
-                /:\/\/[^@]+@/,
-                "://***:***@",
-              ),
-            }),
-        }),
-        Schedule.exponential("1 second").pipe(
-          Schedule.intersect(Schedule.recurs(3)),
-        ),
-      )
-
-      applicationDbConnection = { client, db }
-      console.log("✅ Database connection pool established")
+      applicationDbResource = null
     }
 
-    return applicationDbConnection
+    // Register cleanup handlers for process termination
+    if (typeof process !== "undefined") {
+      process.on("SIGINT", cleanup)
+      process.on("SIGTERM", cleanup)
+      process.on("beforeExit", cleanup)
+    }
+
+    applicationDbResource = { client, db, cleanup }
+    console.log("✅ Database connection pool established")
+
+    return applicationDbResource
   })
 
 /**
- * Database Service Layer implementation with application-level connection management
+ * Database Service Layer implementation for web server applications
  *
- * This layer requires ConfigService and provides DatabaseService
- * The database connection persists for the application lifetime
+ * This uses Layer.effect with application-lifetime resource management.
+ * The connection persists for the entire application lifecycle with proper cleanup.
  * Layer<DatabaseService, never, ConfigService>
  */
 const DatabaseServiceLive = Layer.effect(
@@ -261,22 +260,22 @@ const DatabaseServiceLive = Layer.effect(
     }
 
     // Get or create the application-level database connection
-    const { client, db } = yield* getApplicationConnection(connectionConfig)
+    const connection = yield* getOrCreateDatabaseConnection(connectionConfig)
 
     // Return service implementation
     return DatabaseService.of({
-      query: db,
+      query: connection.db,
 
-      health: () => performHealthCheck(client),
+      health: () => performHealthCheck(connection.client),
 
       withTransaction: <A, E>(
         operation: (
           tx: Parameters<Parameters<DrizzleDatabase["transaction"]>[0]>[0],
         ) => Effect.Effect<A, E>,
-      ) => executeTransaction(db, operation),
+      ) => executeTransaction(connection.db, operation),
 
       runQuery: <A>(queryBuilder: (db: DrizzleDatabase) => Promise<A>) =>
-        runDatabaseQuery(db, queryBuilder),
+        runDatabaseQuery(connection.db, queryBuilder),
     })
   }),
 )
