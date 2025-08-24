@@ -6,8 +6,8 @@
  */
 
 import {
-  sendVerificationEmailPromise,
-  sendPasswordResetEmailPromise,
+  sendVerificationEmailBridge,
+  sendPasswordResetEmailBridge,
 } from "../../src/lib/email-service"
 
 async function testEmailService() {
@@ -18,7 +18,7 @@ async function testEmailService() {
   try {
     // Test 1: Send verification email
     console.log("\n📨 Sending test verification email...")
-    await sendVerificationEmailPromise({
+    await sendVerificationEmailBridge({
       to: "test@example.com",
       name: "Test User",
       verificationUrl: "http://localhost:3000/auth/verify-email?token=test123",
@@ -27,7 +27,7 @@ async function testEmailService() {
 
     // Test 2: Send password reset email
     console.log("\n🔐 Sending test password reset email...")
-    await sendPasswordResetEmailPromise({
+    await sendPasswordResetEmailBridge({
       to: "test@example.com",
       name: "Test User",
       resetUrl: "http://localhost:3000/auth/reset-password?token=reset456",

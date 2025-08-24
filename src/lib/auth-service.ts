@@ -5,7 +5,7 @@ import { jwt } from "better-auth/plugins"
 import { Effect, Layer, Context } from "effect"
 import { ConfigService } from "./config-service"
 import { DatabaseService } from "../server/db/database-service"
-import { sendVerificationEmailPromise } from "./email-service"
+import { sendVerificationEmailBridge } from "./email-service"
 import { getJWTIssuer } from "./project-utils"
 
 /**
@@ -101,7 +101,7 @@ const createAuthInstance = Effect.gen(function* () {
         console.log("📧 Verification URL:", url)
         try {
           const displayName = user.name || user.email.split("@")[0] || "User"
-          await sendVerificationEmailPromise({
+          await sendVerificationEmailBridge({
             to: user.email,
             name: displayName,
             verificationUrl: url,
