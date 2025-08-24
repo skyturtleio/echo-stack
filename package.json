@@ -1,7 +1,7 @@
 {
   "name": "echo-stack-starter",
   "version": "1.0.0",
-  "description": "🛩️ Single-seat full-stack starter kit for the solo developer",
+  "description": "🛩️ Full-stack starter kit for the single-seat developer",
   "keywords": [
     "effect",
     "tanstack",

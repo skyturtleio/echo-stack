@@ -1,4 +1,4 @@
-# 🛩️ Echo Stack - Single-Seat Full-Stack Starter Kit
+# 🛩️ Echo Stack - Full-stack starter kit for the single-seat developer
 
 > **"One Developer, Full Control, Maximum Capability"**  
 > Built for the solo developer who flies everything themselves, inspired by the F/A-18E Super Hornet single-seat fighter.
