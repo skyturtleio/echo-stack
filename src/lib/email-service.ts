@@ -51,18 +51,27 @@ export const EmailService =
   Context.GenericTag<EmailService>("@app/EmailService")
 
 /**
- * Create global email transporter with proper resource management
+ * Application-level email transporter resource
+ * Uses the same singleton pattern as the database connection for consistency
  */
-const createEmailTransporter = Effect.gen(function* () {
-  const configService = yield* ConfigService
-  const logger = yield* Logger
-  const config = yield* configService.getConfig()
+let applicationEmailTransporter: {
+  transporter: Transporter
+  cleanup: () => Promise<void>
+} | null = null
 
-  yield* logger.info("Creating email transporter", {
-    service: "EmailService",
-    operation: "createTransporter",
-    metadata: { environment: config.environment },
-  })
+/**
+ * Get or create the singleton application email transporter
+ * Follows the exact same pattern as getOrCreateDatabaseConnection
+ */
+const getOrCreateEmailTransporter = Effect.gen(function* () {
+  if (applicationEmailTransporter !== null) {
+    return applicationEmailTransporter
+  }
+
+  console.log("🔌 Creating application email transporter...")
+
+  const configService = yield* ConfigService
+  const config = yield* configService.getConfig()
 
   let transporter: Transporter
 
@@ -76,15 +85,6 @@ const createEmailTransporter = Effect.gen(function* () {
         rejectUnauthorized: false,
       },
     })
-
-    yield* logger.info("Email transporter created for development", {
-      service: "EmailService",
-      metadata: {
-        host: config.email.smtp.host,
-        port: config.email.smtp.port,
-        provider: "mailpit",
-      },
-    })
   } else {
     // Production: Use Resend
     transporter = createTransport({
@@ -96,14 +96,31 @@ const createEmailTransporter = Effect.gen(function* () {
         pass: config.email.resend.apiKey,
       },
     })
-
-    yield* logger.info("Email transporter created for production", {
-      service: "EmailService",
-      metadata: { provider: "resend" },
-    })
   }
 
-  return transporter
+  // Define cleanup function (same pattern as database)
+  const cleanup = async () => {
+    console.log("🔌 Cleaning up email transporter...")
+    try {
+      transporter.close()
+      console.log("✅ Email transporter cleaned up")
+    } catch (error) {
+      console.error("⚠️ Error during email transporter cleanup:", error)
+    }
+    applicationEmailTransporter = null
+  }
+
+  // Register cleanup handlers for process termination (same as database)
+  if (typeof process !== "undefined") {
+    process.on("SIGINT", cleanup)
+    process.on("SIGTERM", cleanup)
+    process.on("beforeExit", cleanup)
+  }
+
+  applicationEmailTransporter = { transporter, cleanup }
+  console.log("✅ Application email transporter established")
+
+  return applicationEmailTransporter
 })
 
 /**
@@ -114,8 +131,9 @@ const EmailServiceLive = Effect.gen(function* () {
   const logger = yield* Logger
   const config = yield* configService.getConfig()
 
-  // Create transporter (simplified - we'll add resource management later)
-  const transporter = yield* createEmailTransporter
+  // Get the singleton transporter (created once per application)
+  const emailResource = yield* getOrCreateEmailTransporter
+  const transporter = emailResource.transporter
 
   // Determine from email based on environment
   const getFromEmail = () => {
@@ -347,4 +365,40 @@ export const sendPasswordResetEmailPromise = async (data: {
     ),
   )
   await Effect.runPromise(program)
+}
+
+/**
+ * BetterAuth Bridge Functions
+ *
+ * These functions provide a clean bridge between BetterAuth's promise-based
+ * email system and our Effect-based EmailService. These will be updated to
+ * use the singleton AppLayer runtime once it's implemented.
+ */
+
+/**
+ * Bridge function for BetterAuth verification emails
+ * Uses the singleton AppLayer to ensure services are reused
+ */
+export const sendVerificationEmailBridge = async (data: {
+  to: string
+  name: string
+  verificationUrl: string
+}): Promise<void> => {
+  const { AppLayer } = await import("./app-services")
+  const program = sendVerificationEmail(data)()
+  await Effect.runPromise(program.pipe(Effect.provide(AppLayer)))
+}
+
+/**
+ * Bridge function for BetterAuth password reset emails
+ * Uses the AppLayer with singleton email transporter
+ */
+export const sendPasswordResetEmailBridge = async (data: {
+  to: string
+  name: string
+  resetUrl: string
+}): Promise<void> => {
+  const { AppLayer } = await import("./app-services")
+  const program = sendPasswordResetEmail(data)()
+  await Effect.runPromise(program.pipe(Effect.provide(AppLayer)))
 }

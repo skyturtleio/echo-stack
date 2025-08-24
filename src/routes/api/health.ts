@@ -38,7 +38,6 @@ async function healthCheck(): Promise<Response> {
   const { checkDatabaseHealth } = await import(
     "../../server/db/database-service"
   )
-  const { AppLayer } = await import("../../lib/app-services")
 
   const healthCheckEffect = Effect.gen(function* () {
     // Get configuration service
@@ -87,6 +86,7 @@ async function healthCheck(): Promise<Response> {
   })
 
   try {
+    const { AppLayer } = await import("../../lib/app-services")
     const result = await Effect.runPromise(
       healthCheckEffect.pipe(Effect.provide(AppLayer)),
     )

@@ -7,13 +7,11 @@ import { Effect } from "effect"
 import { setupGracefulShutdown } from "./lib/graceful-shutdown"
 
 /**
- * Enhanced Server Entry Point with Resource Management
+ * TanStack Start Server Entry Point with Effect Integration
  *
- * This server now uses Effect's service architecture for:
- * - Type-safe configuration validation
- * - Proper database resource management
- * - Health monitoring
- * - Graceful shutdown handling
+ * This server entry point uses Effect services with proper resource management.
+ * Services like database connections and email transporters use singleton patterns
+ * for efficiency, while business logic remains request-scoped.
  */
 
 // Setup graceful shutdown handling
@@ -28,7 +26,6 @@ const initializeServer = async () => {
   const { Logger } = await import("./lib/logger-service")
   const { ConfigService } = await import("./lib/config-service")
   const { checkDatabaseHealth } = await import("./server/db/database-service")
-  const { AppLayer } = await import("./lib/app-services")
 
   const serverEffect = Effect.gen(function* () {
     const logger = yield* Logger
@@ -56,6 +53,7 @@ const initializeServer = async () => {
     return config
   })
 
+  const { AppLayer } = await import("./lib/app-services")
   return await Effect.runPromise(serverEffect.pipe(Effect.provide(AppLayer)))
 }
 
