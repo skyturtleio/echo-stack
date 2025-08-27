@@ -1,7 +1,7 @@
 {
-  "name": "echo-stack-starter",
+  "name": "echo-stack-start",
   "version": "1.0.0",
-  "description": "🛩️ Full-stack starter kit for the single-seat developer",
+  "description": "Full-stack application built with Echo Stack",
   "keywords": [
     "effect",
     "tanstack",
@@ -14,7 +14,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/your-project-name.git"
+    "url": "https://github.com/skyturtleio/echo-stack-start"
   },
   "private": false,
   "type": "module",

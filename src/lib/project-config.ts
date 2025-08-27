@@ -7,16 +7,16 @@
 
 export const PROJECT_CONFIG = {
   // Main project information
-  name: "Echo Stack",
-  tagline: "Single-Seat Full-Stack Starter",
-  description: "Production-ready full-stack starter kit for solo developers",
+  name: "echo stack start",
+  tagline: "Full-Stack Application",
+  description: "Modern full-stack application built with Echo Stack",
 
   // Branding
-  emoji: "✈️",
+  emoji: "🚀",
 
   // Meta information
-  author: "Your Name",
-  version: "1.0.0",
-} as const
+  author: "skyturtleio",
+  version: "0.0.1",
+} as const;
 
-export type ProjectConfig = typeof PROJECT_CONFIG
+export type ProjectConfig = typeof PROJECT_CONFIG;
